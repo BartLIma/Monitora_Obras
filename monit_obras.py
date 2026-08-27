@@ -66,14 +66,11 @@ if tipo_acompanhamento == "Obras Novo PAC":
         if busca_prop.strip():
             obras_filtradas = df_pac[df_pac["Proposta"] == busca_prop.strip()]
 
-       if not obras_filtradas.empty:
+    if not obras_filtradas.empty:
         opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Componente', 'PAC')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra do PAC:", opcoes_obras, key="sel_pac")
         
-        # CORREÇÃO: Captura apenas o número da proposta (primeiro item da divisão)
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
-        
-        # CORREÇÃO: Usa .iloc[0] para extrair a linha como um dicionário/série único
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
         muni = dados_obra.get("Município", "").upper()
@@ -99,6 +96,7 @@ if tipo_acompanhamento == "Obras Novo PAC":
 
         msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Status PAC: {sit_pac}"
         programa_nome = "Obras Novo PAC"
+
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS (COLUNAS REAIS)
 # =========================================================================
@@ -130,17 +128,14 @@ else:
         if busca_prop.strip():
             obras_filtradas = df_ret[df_ret["Proposta"] == busca_prop.strip()]
 
-       if not obras_filtradas.empty:
-        opcoes_obras = [f"{row[col_prop_ret]} - {row.get('Nome da unidade', 'Obra')} ({row.get('Componente', 'Retomada')})" for idx, row in obras_filtradas.iterrows()]
+    if not obras_filtradas.empty:
+        opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Componente', 'Retomada')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
         
-        # CORREÇÃO: Captura apenas o número da proposta (primeiro item da divisão)
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
+        dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
-        # CORREÇÃO: Usa .iloc[0] para extrair a linha como um dicionário/série único
-        dados_obra = obras_filtradas[obras_filtradas[col_prop_ret] == prop_escolhida].iloc[0]
-        
-        muni = dados_obra.get(col_muni_ret, "").upper()
+        muni = dados_obra.get("Município", "").upper()
         uf = dados_obra.get("UF", "PB").upper()
         unidade = dados_obra.get("Nome da unidade", "")
         comp = dados_obra.get("Componente", "")
