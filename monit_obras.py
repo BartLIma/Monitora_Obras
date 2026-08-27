@@ -3,7 +3,7 @@ import streamlit as st
 import os
 import urllib.parse
 
-st.title("🏗️ Monitoramento Estratégica - Pendências de Obras no SISMOB")
+st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
 
 # --- CARREGAMENTO DO BANCO DE SECRETÁRIOS (COSEMS/PB) ---
 df_sec = pd.DataFrame()
