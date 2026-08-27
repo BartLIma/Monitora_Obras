@@ -242,62 +242,63 @@ if not obras_filtradas.empty and muni:
 # st.markdown("---")
 # st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
 # =========================================================================
-# 🗺️ BLOCO EXTRA: MAPEAMENTO GEOGRÁFICO DA PARAÍBA
+# 🗺️ BLOCO EXTRA: MAPEAMENTO GEOGRÁFICO DA PARAÍBA (CORRIGIDO)
 # =========================================================================
 st.markdown("---")
 st.subheader("🗺️ Distribuição Geográfica das Demandas — Paraíba")
 
-# Dicionário Mestre de Coordenadas dos Municípios da Paraíba (Mesmo padrão do app GPS)
+# Dicionário Mestre de Coordenadas dos Municípios da Paraíba
 coordenadas_pb = {
     "joao pessoa": [-7.1198, -34.8450], "campina grande": [-7.2247, -35.8772],
     "santa rita": [-7.1139, -34.9736], "patos": [-7.0269, -37.2797],
     "guarabira": [-6.8547, -35.4914], "cabedelo": [-6.9811, -34.8339],
     "bayeux": [-7.1253, -34.9322], "sousa": [-6.7611, -38.2250],
-    "cajazeiras": [-6.8886, -38.5583], "sapé": [-7.0964, -35.2319],
+    "cajazeiras": [-6.8886, -38.5583], "sape": [-7.0964, -35.2319],
     "mamanguape": [-6.8386, -35.1264], "itabaiana": [-7.3167, -35.3333],
-    "pombal": [-6.7725, -37.8014], "catolé do rocha": [-6.3439, -37.7456],
-    "esperança": [-7.0253, -35.8578], "monteiro": [-7.8894, -37.1200]
+    "pombal": [-6.7725, -37.8014], "catole do rocha": [-6.3439, -37.7456],
+    "esperanca": [-7.0253, -35.8578], "monteiro": [-7.8894, -37.1200]
 }
 
-# Coordenada central da Paraíba para o mapa inicializar focado no estado
-centro_pb = [-7.1198, -36.5000]
-
-# Prepara uma lista para agrupar todas as obras do banco carregado
 dados_mapa = []
-
-# Varre a planilha atual (PAC ou Retomada) para extrair as coordenadas de cada linha
 df_atual = df_pac if tipo_acompanhamento == "Obras Novo PAC" else df_ret
 
 if not df_atual.empty:
-    for idx, row in df_atual.iterrows():
-        municipio_bruto = str(row.get("Município", "")).lower().strip()
+    # 🔍 Captura a quantidade TOTAL real de obras/linhas filtradas na planilha cheia
+    total_obras_geral = len(df_atual)
+    
+    # Agrupa por município para plotar apenas 1 ponto geográfico por cidade no mapa
+    df_municipios_unicos = df_atual.drop_duplicates(subset=["Município"])
+
+    for idx, row in df_municipios_unicos.iterrows():
+        muni_bruto = str(row.get("Município", "")).lower().strip()
+        muni_limpo = muni_bruto.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("â","a").replace("ê","e").replace("ô","o").replace("ã","a").replace("õ","a").replace("ç","c")
         
-        # Se o município existir no nosso dicionário de coordenadas, armazena para o mapa
-        if municipio_bruto in coordenadas_pb:
+        if muni_limpo in coordenadas_pb:
+            # 📊 SOMA DAS OBRAS: Conta quantas linhas aquele município tem no arquivo completo
+            total_obras_muni = len(df_atual[df_atual["Município"].str.lower().str.strip() == muni_bruto])
+            
             dados_mapa.append({
-                "lat": coordenadas_pb[municipio_bruto][0],
-                "lon": coordenadas_pb[municipio_bruto][1],
-                "Proposta": row.get("Proposta", ""),
+                "lat": coordenadas_pb[muni_limpo],
+                "lon": coordenadas_pb[muni_limpo],
                 "Município": row.get("Município", "").upper(),
-                "Unidade": row.get("Nome da unidade", "Obra")
+                "Total de Obras": int(total_obras_muni)
             })
 
-    # Se encontrar coordenadas válidas, renderiza o mapa na tela
     if dados_mapa:
         df_mapa = pd.DataFrame(dados_mapa)
         
-        # Caixa informativa com o total de pontos plotados
-        st.success(f"📍 Sucesso! {len(df_mapa)} obras foram localizadas e mapeadas no território paraibano.")
+        # 💥 MENSAGEM CORRIGIDA: Exibe o total fático de OBRAS e a quantidade de cidades
+        st.success(f"📍 Sucesso! Foram localizadas **{total_obras_geral} obras** ativas, distribuídas entre **{len(df_mapa)} municípios** paraibanos.")
         
-        # Renderiza o mapa nativo do Streamlit focado estritamente na Paraíba
+        # Renderiza o mapa nativo do Streamlit focado na Paraíba
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
         
-        # Exibe uma tabela resumo logo abaixo do mapa para conferência rápida
-        with st.expander("📊 Ver relação de municípios mapeados"):
-            st.dataframe(df_mapa[["Proposta", "Município", "Unidade"]], use_container_width=True)
+        # Exibe a tabela resumo com o totalizador real acumulado por cidade
+        with st.expander("📊 Ver relação de municípios mapeados e quantidade de obras"):
+            st.dataframe(
+                df_mapa[["Município", "Total de Obras"]].sort_values(by="Total de Obras", ascending=False), 
+                use_container_width=True,
+                index=False
+            )
     else:
-        st.info("ℹ️ Para plotar os alfinetes no mapa, certifique-se de preencher as coordenadas dos municípios no dicionário 'coordenadas_pb'.")
-
-# Rodapé Técnico do Corecon
-st.markdown("---")
-st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
+        st.info("ℹ downgrade: Nenhum município do filtro atual foi localizado no dicionário 'coordenadas_pb'.")
