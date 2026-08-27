@@ -306,6 +306,11 @@ if not obras_filtradas.empty and muni:
     
     st.code(mensagem_whatsapp, language="text")
 
-# Rodapé Técnico do Corecon
+# --- RODAPÉ DISCRETO PADRONIZADO DA PARCERIA ---
 st.markdown("---")
-st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align:right; font-size:12px; color:gray; font-style:italic;'>"
+    "Desenvolvido por: Bartolomeu Lima (Corecon-ES 1541) & Gemini AI 🤝 2026</p>",
+    unsafe_allow_html=True
+)
+
