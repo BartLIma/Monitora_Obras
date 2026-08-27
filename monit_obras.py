@@ -247,17 +247,56 @@ if not obras_filtradas.empty and muni:
 st.markdown("---")
 st.subheader("🗺️ Distribuição Geográfica das Demandas — Paraíba")
 
-# Dicionário Mestre de Coordenadas dos Municípios da Paraíba
+# Dicionário Mestre de Coordenadas dos Municípios da Paraíba (Totalmente Expandido)
 coordenadas_pb = {
-    "joao pessoa": [-7.1198, -34.8450], "campina grande": [-7.2247, -35.8772],
-    "santa rita": [-7.1139, -34.9736], "patos": [-7.0269, -37.2797],
-    "guarabira": [-6.8547, -35.4914], "cabedelo": [-6.9811, -34.8339],
-    "bayeux": [-7.1253, -34.9322], "sousa": [-6.7611, -38.2250],
-    "cajazeiras": [-6.8886, -38.5583], "sape": [-7.0964, -35.2319],
-    "mamanguape": [-6.8386, -35.1264], "itabaiana": [-7.3167, -35.3333],
-    "pombal": [-6.7725, -37.8014], "catole do rocha": [-6.3439, -37.7456],
-    "esperanca": [-7.0253, -35.8578], "monteiro": [-7.8894, -37.1200]
+    "alcantil": [-7.7458, -36.0592], "alhandra": [-7.4393, -34.9136],
+    "arara": [-6.8278, -35.7578], "aroeiras": [-7.4831, -35.7103],
+    "barra de santa rosa": [-6.7194, -36.0617], "barra de sao miguel": [-7.7522, -36.3197],
+    "bayeux": [-7.1253, -34.9322], "belem do brejo do cruz": [-6.1856, -37.5342],
+    "boqueirao": [-7.4981, -36.1322], "borborema": [-6.8042, -35.6189],
+    "cabaceiras": [-7.4914, -36.2872], "cacimba de dentro": [-6.6436, -35.7836],
+    "cajazeiras": [-6.8886, -38.5583], "campina grande": [-7.2247, -35.8772],
+    "conde": [-7.2597, -34.9075], "coremas": [-7.0142, -38.0036],
+    "cruz do espirito santo": [-7.1411, -35.0864], "desterro": [-7.2917, -37.3119],
+    "diamante": [-7.3789, -38.1936], "duas estradas": [-6.7144, -35.4528],
+    "esperanca": [-7.0253, -35.8578], "frei martinho": [-6.4253, -36.4356],
+    "itabaiana": [-7.3167, -35.3333], "itapororoca": [-6.7917, -35.1517],
+    "joao pessoa": [-7.1198, -34.8450], "junco do serido": [-6.9856, -36.7214],
+    "juripiranga": [-7.4042, -35.2558], "mamanguape": [-6.8386, -35.1264],
+    "mari": [-7.0583, -35.2217], "mogeiro": [-7.2922, -35.4744],
+    "nova palmeira": [-6.6575, -36.4186], "patos": [-7.0269, -37.2797],
+    "paulista": [-6.5925, -37.6247], "pianco": [-7.1983, -37.9286],
+    "pilar": [-7.2686, -35.1217], "pocinhos": [-7.0744, -36.0617],
+    "puxinana": [-7.1594, -35.9614], "salgadinho": [-7.1006, -36.8472],
+    "santa luzia": [-6.8722, -36.9181], "santa rita": [-7.1139, -34.9736],
+    "sao jose da lagoa tapada": [-6.9458, -38.1636], "sao jose de piranhas": [-7.1167, -38.5022],
+    "sao sebastiao de lagoa de roca": [-7.0631, -35.8456], "serra branca": [-7.4839, -36.6631],
+    "solanea": [-6.8447, -35.6925], "sousa": [-6.7611, -38.2250],
+    "teixeira": [-7.2231, -37.2522], "vista serrana": [-6.7381, -37.5614],
+    "alagoa grande": [-7.0333, -35.6186], "areial": [-7.0494, -35.9283],
+    "bananeiras": [-6.7547, -35.6339], "bonito de santa fe": [-7.1544, -38.7517],
+    "brejo do cruz": [-6.3475, -37.4981], "caapora": [-7.5133, -34.9039],
+    "cabedelo": [-6.9811, -34.8339], "casserengue": [-6.7214, -35.6836],
+    "cuite": [-6.4853, -36.1550], "dona ines": [-6.6217, -35.6267],
+    "fagundes": [-7.3756, -35.7761], "guarabira": [-6.8547, -35.4914],
+    "gurinhem": [-7.1211, -35.4244], "ibiara": [-7.5256, -38.4117],
+    "itaporanga": [-7.3044, -38.1503], "itatuba": [-7.4372, -35.5392],
+    "jacarau": [-6.6111, -35.1278], "juazeirinho": [-7.0653, -36.5786],
+    "lagoa": [-6.5656, -37.7558], "lastro": [-6.5406, -38.2869],
+    "manaira": [-7.7011, -38.1539], "mulungu": [-6.9419, -35.4522],
+    "nova olinda": [-7.4789, -38.0436], "picui": [-6.5103, -36.3456],
+    "pirpirituba": [-6.7797, -35.4986], "pitimbu": [-7.4664, -34.8089],
+    "pombal": [-6.7725, -37.8014], "queimadas": [-7.3592, -35.8972],
+    "remigio": [-6.9297, -35.7925], "riachao do bacamarte": [-7.2536, -35.5975],
+    "riacho dos cavalos": [-6.4422, -37.6492], "sao bento": [-6.4828, -37.4503],
+    "sao francisco": [-6.8044, -38.0831], "sao joao do rio do peixe": [-6.7236, -38.4483],
+    "sao joao do tigre": [-8.0811, -36.8506], "sao jose de princesa": [-7.7378, -38.0936],
+    "sape": [-7.0964, -35.2319], "serra redonda": [-7.1856, -35.5911],
+    "sossego": [-6.7644, -36.2514], "tacima": [-6.4883, -35.6372],
+    "tenorio": [-6.9536, -36.6322], "umbuzeiro": [-7.6975, -35.5986],
+    "vieiropolis": [-6.6433, -38.2436]
 }
+
 
 dados_mapa = []
 df_atual = df_pac if tipo_acompanhamento == "Obras Novo PAC" else df_ret
