@@ -95,11 +95,10 @@ if tipo_acompanhamento == "Obras Novo PAC":
         busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
         if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
 
-        if not obras_filtradas.empty:
+    if not obras_filtradas.empty:
         opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", opcoes_obras, key="sel_pac")
         
-        # CORREÇÃO: Puxa o índice [0] da lista dividida antes de aplicar o .strip()
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
@@ -151,11 +150,10 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
         if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
 
-        if not obras_filtradas.empty:
+    if not obras_filtradas.empty:
         opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
         
-        # CORREÇÃO: Puxa o índice [0] da lista dividida antes de aplicar o .strip()
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
@@ -207,7 +205,6 @@ else:
             if muni_l in coordenadas_pb:
                 tot = len(df_pac[df_pac["Município"].str.lower().str.strip() == row.get("Município", "").lower().strip()])
                 dados_mapa.append({
-                    # CORREÇÃO: Indexação correta da lista de coordenadas [0] para lat e [1] para lon
                     "lat": float(coordenadas_pb[muni_l][0]), 
                     "lon": float(coordenadas_pb[muni_l][1]), 
                     "Município": row.get("Município", "").upper(), "Obras PAC": tot, "Obras Retomada": 0, "Total Geral": tot, "Status": "Apenas PAC"
@@ -222,7 +219,6 @@ else:
             if muni_l in coordenadas_pb:
                 tot = len(df_ret[df_ret["Município"].str.lower().str.strip() == row.get("Município", "").lower().strip()])
                 dados_mapa.append({
-                    # CORREÇÃO: Indexação correta da lista de coordenadas [0] para lat e [1] para lon
                     "lat": float(coordenadas_pb[muni_l][0]), 
                     "lon": float(coordenadas_pb[muni_l][1]), 
                     "Município": row.get("Município", "").upper(), "Obras PAC": 0, "Obras Retomada": tot, "Total Geral": tot, "Status": "Apenas Retomada"
@@ -238,13 +234,11 @@ else:
         
         for m_limpo in muni_simultaneos:
             if m_limpo in coordenadas_pb:
-                # CORREÇÃO: Garante a extração segura do nome real
                 nome_real = str(df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo]["Município"].iloc[0]).upper()
                 tot_pac = len(df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo])
                 tot_ret = len(df_ret[df_ret["Município"].apply(limpar_texto_muni) == m_limpo])
                 
                 dados_mapa.append({
-                    # CORREÇÃO: Indexação correta da lista de coordenadas [0] para lat e [1] para lon
                     "lat": float(coordenadas_pb[m_limpo][0]), 
                     "lon": float(coordenadas_pb[m_limpo][1]),
                     "Município": nome_real, "Obras PAC": tot_pac, "Obras Retomada": tot_ret,
@@ -258,3 +252,50 @@ else:
         
         with st.expander("📊 Detalhamento Estatístico do Painel Geográfico"):
             st.dataframe(df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False), use_container_width=True, index=False)
+
+# =========================================================================
+# BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (MANTIDO SEGURO)
+# =========================================================================
+if not obras_filtradas.empty and muni:
+    st.markdown("---")
+    st.subheader("📋 Dados de Contato do Gestor Local")
+    nome_secretario, fone_secretario = "Não localizado no cadastro", ""
+    
+    if not df_sec.empty:
+        colunas_l = {c: c.strip().lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("ã","a").replace("ç","c") for c in df_sec.columns}
+        col_muni_sec = next((orig for orig, limpa in colunas_l.items() if "municip" in limpa), df_sec.columns)
+        col_nome_sec = next((orig for orig, limpa in colunas_l.items() if "nome" in limpa or "secretario" in limpa or "gestor" in limpa), None)
+        col_fone_sec = next((orig for orig, limpa in colunas_l.items() if "tel" in limpa or "cel" in limpa or "fone" in limpa or "whats" in limpa or "zap" in limpa), None)
+        
+        filtro_sec = df_sec[df_sec[col_muni_sec].str.lower().str.strip() == muni.lower().strip()]
+        if not filtro_sec.empty:
+            nome_secretario = filtro_sec.iloc[0][col_nome_sec] if col_nome_sec else "Não Informado"
+            fone_secretario = filtro_sec.iloc[0][col_fone_sec] if col_fone_sec else ""
+
+    st.write(f"**Secretário(a) de Saúde:** {nome_secretario}")
+    st.write(f"**WhatsApp/Telefone:** {fone_secretario if fone_secretario else 'Não informado'}")
+
+    saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
+    mensagem_whatsapp = (
+        f"{saudacao},\n\n"
+        f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
+        f"📌 *DADOS DO INSTRUMENTO:*\n"
+        f"• Município: {muni} - PB\n"
+        f"• Proposta Nº: {prop_escolhida}\n"
+        f"{msg_contexto}\n\n"
+        f"Solicitamos atenção especial quanto ao andamento dos trâmites administrativos para a regularização do objeto. "
+        f"Permanecemos à disposição para suporte técnico."
+    )
+    
+    st.text_area("Visualização da Mensagem:", value=mensagem_whatsapp, height=200)
+    
+    if fone_secretario:
+        num_limpo = "".join(filter(str.isdigit, fone_secretario))
+        if len(num_limpo) <= 11 and num_limpo != "": num_limpo = f"55{num_limpo}"
+        st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web](https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)})")
+    
+    st.code(mensagem_whatsapp, language="text")
+
+# Rodapé Técnico do Corecon
+st.markdown("---")
+st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
