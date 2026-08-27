@@ -184,26 +184,28 @@ if not obras_filtradas.empty and muni:
     nome_secretario = "Não localizado no cadastro"
     fone_secretario = ""
     
-       if not df_sec.empty:
-        # Padroniza os nomes das colunas da planilha COSEMS para busca sem acentos ou espaços
-        colunas_limpas = {c: c.strip().lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("ç","c") for c in df_sec.columns}
+    if not df_sec.empty:
+        # Cria um mapeamento de colunas limpas (sem espaços, minúsculas e sem acentos)
+        colunas_limpas = {
+            c: c.strip().lower()
+            .replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
+            .replace("ã","a").replace("õ","a").replace("ç","c") 
+            for c in df_sec.columns
+        }
         
-        # Localiza a coluna de Município
+        # Localiza dinamicamente as colunas corretas na planilha de secretários
         col_muni_sec = next((orig for orig, limpa in colunas_limpas.items() if "municip" in limpa), df_sec.columns[0])
-        
-        # Localiza a coluna do Nome do Secretário
         col_nome_sec = next((orig for orig, limpa in colunas_limpas.items() if "nome" in limpa or "secretario" in limpa or "gestor" in limpa), None)
-        
-        # Localiza a coluna de Telefone/WhatsApp
         col_fone_sec = next((orig for orig, limpa in colunas_limpas.items() if "tel" in limpa or "cel" in limpa or "fone" in limpa or "whats" in limpa or "zap" in limpa), None)
         
-        # Realiza o cruzamento exato pelo nome do município
+        # Filtra o secretário correspondente ao município da obra
         filtro_sec = df_sec[df_sec[col_muni_sec].str.lower().str.strip() == muni.lower().strip()]
         
         if not filtro_sec.empty:
-            # Captura os dados de forma segura usando as colunas identificadas
+            # Captura segura dos dados utilizando a primeira linha encontrada [0]
             nome_secretario = filtro_sec.iloc[0][col_nome_sec] if col_nome_sec else "Coluna de nome não identificada"
             fone_secretario = filtro_sec.iloc[0][col_fone_sec] if col_fone_sec else ""
+
     st.write(f"**Secretário(a) de Saúde:** {nome_secretario}")
     st.write(f"**WhatsApp/Telefone:** {fone_secretario if fone_secretario else 'Não informado'}")
 
@@ -213,7 +215,7 @@ if not obras_filtradas.empty and muni:
         f"{saudacao},\n\n"
         f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
         f"📌 *DADOS DO INSTRUMENTO:*\n"
-        f"• Municipio: {muni} - {uf}\n"
+        f"• Município: {muni} - {uf}\n"
         f"• Proposta Nº: {prop_escolhida}\n"
         f"{msg_contexto}\n\n"
         f"Solicitamos atenção especial quanto ao andamento dos trâmites administrativos para a regularização do objeto. "
