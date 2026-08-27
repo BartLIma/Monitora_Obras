@@ -207,9 +207,10 @@ else:
                 dados_mapa.append({
                     "lat": float(coordenadas_pb[muni_l][0]), 
                     "lon": float(coordenadas_pb[muni_l][1]), 
-                    "Município": row.get("Município", "").upper(), "Obras PAC": tot, "Obras Retomada": 0, "Total Geral": tot, "Status": "Apenas PAC"
+                    "Município": str(row.get("Município", "")).upper(), "Obras PAC": tot, "Obras Retomada": 0, "Total Geral": tot, "Status": "Apenas PAC"
                 })
-        st.success(f"📍 Mapeados {len(dados_mapa)} municípios com pendências exclusivas do Novo PAC.")
+        if dados_mapa:
+            st.success(f"📍 Mapeados {len(dados_mapa)} municípios com pendências exclusivas do Novo PAC.")
 
     # LÓGICA 2: Apenas Retomada
     elif modo_mapa == "Apenas Retomada de Obras Paralisadas" and not df_ret.empty:
@@ -221,12 +222,13 @@ else:
                 dados_mapa.append({
                     "lat": float(coordenadas_pb[muni_l][0]), 
                     "lon": float(coordenadas_pb[muni_l][1]), 
-                    "Município": row.get("Município", "").upper(), "Obras PAC": 0, "Obras Retomada": tot, "Total Geral": tot, "Status": "Apenas Retomada"
+                    "Município": str(row.get("Município", "")).upper(), "Obras PAC": 0, "Obras Retomada": tot, "Total Geral": tot, "Status": "Apenas Retomada"
                 })
-        st.warning(f"📍 Mapeados {len(dados_mapa)} municípios com contratos de Retomada Paralisados.")
+        if dados_mapa:
+            st.warning(f"📍 Mapeados {len(dados_mapa)} municípios com contratos de Retomada Paralisados.")
 
     # LÓGICA 3: Mapeamento Crítico (Simultâneos)
-    elif not df_pac.empty and not df_ret.empty:
+    elif modo_mapa == "🚨 Mapeamento Crítico (PAC e Retomada Simultâneos)" and not df_pac.empty and not df_ret.empty:
         muni_pac_set = set(df_pac["Município"].dropna().apply(limpar_texto_muni).unique())
         muni_ret_set = set(df_ret["Município"].dropna().apply(limpar_texto_muni).unique())
         
@@ -234,7 +236,10 @@ else:
         
         for m_limpo in muni_simultaneos:
             if m_limpo in coordenadas_pb:
-                nome_real = str(df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo]["Município"].iloc[0]).upper()
+                # CORREÇÃO: Captura segura da string usando .iloc[0] antes de aplicar o .upper()
+                filtro_nome = df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo]["Município"]
+                nome_real = str(filtro_nome.iloc[0]).upper() if not filtro_nome.empty else m_limpo.upper()
+                
                 tot_pac = len(df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo])
                 tot_ret = len(df_ret[df_ret["Município"].apply(limpar_texto_muni) == m_limpo])
                 
@@ -242,17 +247,22 @@ else:
                     "lat": float(coordenadas_pb[m_limpo][0]), 
                     "lon": float(coordenadas_pb[m_limpo][1]),
                     "Município": nome_real, "Obras PAC": tot_pac, "Obras Retomada": tot_ret,
-                    "Total Geral": tot_pac + tot_ret, "Status": "🚨 ALERTA CRÍTICO: Possui Ambos os Programas"
+                    "Total Geral": tot_pac + tot_ret, "Status": "🚨 ALERTA CRÍTICO: Ambos os Programas"
                 })
-        st.error(f"🚨 ATENÇÃO: Identificados {len(dados_mapa)} MUNICÍPIOS CRÍTICOS com obras nos dois programas simultaneamente!")
+        if dados_mapa:
+            st.error(f"🚨 ATENÇÃO: Identificados {len(dados_mapa)} MUNICÍPIOS CRÍTICOS com obras nos dois programas simultaneamente!")
 
+    # Renderização segura do mapa e tabelas apenas se houver dados coletados
     if dados_mapa:
         df_mapa = pd.DataFrame(dados_mapa)
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
         
         with st.expander("📊 Detalhamento Estatístico do Painel Geográfico"):
-            st.dataframe(df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False), use_container_width=True, index=False)
-
+            # CORREÇÃO: Ordenação segura e troca de 'index=False' por 'hide_index=True' para a nova versão do Streamlit
+            df_ordenado = df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False)
+            st.dataframe(df_ordenado, use_container_width=True, hide_index=True)
+    else:
+        st.info("ℹ️ Selecione uma opção acima ou verifique os arquivos da planilha para renderizar os pontos no mapa.")
 # =========================================================================
 # BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (MANTIDO SEGURO)
 # =========================================================================
