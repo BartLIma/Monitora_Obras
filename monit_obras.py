@@ -239,5 +239,65 @@ if not obras_filtradas.empty and muni:
     st.code(mensagem_whatsapp, language="text")
 
 # Rodapé Técnico do Corecon
+# st.markdown("---")
+# st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
+# =========================================================================
+# 🗺️ BLOCO EXTRA: MAPEAMENTO GEOGRÁFICO DA PARAÍBA
+# =========================================================================
+st.markdown("---")
+st.subheader("🗺️ Distribuição Geográfica das Demandas — Paraíba")
+
+# Dicionário Mestre de Coordenadas dos Municípios da Paraíba (Mesmo padrão do app GPS)
+coordenadas_pb = {
+    "joao pessoa": [-7.1198, -34.8450], "campina grande": [-7.2247, -35.8772],
+    "santa rita": [-7.1139, -34.9736], "patos": [-7.0269, -37.2797],
+    "guarabira": [-6.8547, -35.4914], "cabedelo": [-6.9811, -34.8339],
+    "bayeux": [-7.1253, -34.9322], "sousa": [-6.7611, -38.2250],
+    "cajazeiras": [-6.8886, -38.5583], "sapé": [-7.0964, -35.2319],
+    "mamanguape": [-6.8386, -35.1264], "itabaiana": [-7.3167, -35.3333],
+    "pombal": [-6.7725, -37.8014], "catolé do rocha": [-6.3439, -37.7456],
+    "esperança": [-7.0253, -35.8578], "monteiro": [-7.8894, -37.1200]
+}
+
+# Coordenada central da Paraíba para o mapa inicializar focado no estado
+centro_pb = [-7.1198, -36.5000]
+
+# Prepara uma lista para agrupar todas as obras do banco carregado
+dados_mapa = []
+
+# Varre a planilha atual (PAC ou Retomada) para extrair as coordenadas de cada linha
+df_atual = df_pac if tipo_acompanhamento == "Obras Novo PAC" else df_ret
+
+if not df_atual.empty:
+    for idx, row in df_atual.iterrows():
+        municipio_bruto = str(row.get("Município", "")).lower().strip()
+        
+        # Se o município existir no nosso dicionário de coordenadas, armazena para o mapa
+        if municipio_bruto in coordenadas_pb:
+            dados_mapa.append({
+                "lat": coordenadas_pb[municipio_bruto][0],
+                "lon": coordenadas_pb[municipio_bruto][1],
+                "Proposta": row.get("Proposta", ""),
+                "Município": row.get("Município", "").upper(),
+                "Unidade": row.get("Nome da unidade", "Obra")
+            })
+
+    # Se encontrar coordenadas válidas, renderiza o mapa na tela
+    if dados_mapa:
+        df_mapa = pd.DataFrame(dados_mapa)
+        
+        # Caixa informativa com o total de pontos plotados
+        st.success(f"📍 Sucesso! {len(df_mapa)} obras foram localizadas e mapeadas no território paraibano.")
+        
+        # Renderiza o mapa nativo do Streamlit focado estritamente na Paraíba
+        st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
+        
+        # Exibe uma tabela resumo logo abaixo do mapa para conferência rápida
+        with st.expander("📊 Ver relação de municípios mapeados"):
+            st.dataframe(df_mapa[["Proposta", "Município", "Unidade"]], use_container_width=True)
+    else:
+        st.info("ℹ️ Para plotar os alfinetes no mapa, certifique-se de preencher as coordenadas dos municípios no dicionário 'coordenadas_pb'.")
+
+# Rodapé Técnico do Corecon
 st.markdown("---")
 st.markdown("<p style='text-align:right; font-size:12px; color:gray;'>Bartolomeu Lima - Corecon-ES 1541</p>", unsafe_allow_html=True)
