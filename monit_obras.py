@@ -263,7 +263,7 @@ dados_mapa = []
 df_atual = df_pac if tipo_acompanhamento == "Obras Novo PAC" else df_ret
 
 if not df_atual.empty:
-    # 🔍 Captura a quantidade TOTAL real de obras/linhas filtradas na planilha cheia
+    # Captura a quantidade TOTAL real de obras/linhas filtradas na planilha cheia
     total_obras_geral = len(df_atual)
     
     # Agrupa por município para plotar apenas 1 ponto geográfico por cidade no mapa
@@ -274,12 +274,13 @@ if not df_atual.empty:
         muni_limpo = muni_bruto.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("â","a").replace("ê","e").replace("ô","o").replace("ã","a").replace("õ","a").replace("ç","c")
         
         if muni_limpo in coordenadas_pb:
-            # 📊 SOMA DAS OBRAS: Conta quantas linhas aquele município tem no arquivo completo
+            # SOMA DAS OBRAS: Conta quantas linhas aquele município tem no arquivo completo
             total_obras_muni = len(df_atual[df_atual["Município"].str.lower().str.strip() == muni_bruto])
             
             dados_mapa.append({
-                "lat": coordenadas_pb[muni_limpo],
-                "lon": coordenadas_pb[muni_limpo],
+                # CORREÇÃO CRÍTICA: Puxa o índice [0] como float para Latitude e [1] para Longitude
+                "lat": float(coordenadas_pb[muni_limpo][0]),
+                "lon": float(coordenadas_pb[muni_limpo][1]),
                 "Município": row.get("Município", "").upper(),
                 "Total de Obras": int(total_obras_muni)
             })
@@ -287,10 +288,10 @@ if not df_atual.empty:
     if dados_mapa:
         df_mapa = pd.DataFrame(dados_mapa)
         
-        # 💥 MENSAGEM CORRIGIDA: Exibe o total fático de OBRAS e a quantidade de cidades
+        # Mensagem foca no total volumétrico de OBRAS e na quantidade de cidades
         st.success(f"📍 Sucesso! Foram localizadas **{total_obras_geral} obras** ativas, distribuídas entre **{len(df_mapa)} municípios** paraibanos.")
         
-        # Renderiza o mapa nativo do Streamlit focado na Paraíba
+        # Renderiza o mapa nativo do Streamlit focado na Paraíba utilizando os números limpos
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
         
         # Exibe a tabela resumo com o totalizador real acumulado por cidade
@@ -301,4 +302,5 @@ if not df_atual.empty:
                 index=False
             )
     else:
-        st.info("ℹ downgrade: Nenhum município do filtro atual foi localizado no dicionário 'coordenadas_pb'.")
+        st.info("ℹ️ Nenhum município do filtro atual foi localizado no dicionário 'coordenadas_pb'. Verifique a grafia dos nomes.")
+
