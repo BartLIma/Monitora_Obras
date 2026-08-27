@@ -164,6 +164,9 @@ else:
 # =========================================================================
 # BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (VERSÕES 2, 3 e 4)
 # =========================================================================
+# =========================================================================
+# BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (VERSÕES 2, 3 e 4)
+# =========================================================================
 if not obras_filtradas.empty and muni:
     st.markdown("---")
     st.subheader("📋 Dados de Contato do Gestor Local")
@@ -172,18 +175,21 @@ if not obras_filtradas.empty and muni:
     fone_secretario = ""
     
     if not df_sec.empty:
-        col_muni_sec = "Município" if "Município" in df_sec.columns else df_sec.columns
+        col_muni_sec = "Município" if "Município" in df_sec.columns else df_sec.columns[0]
         
-        col_nome_sec = [c for c in df_sec.columns if "nome" in c.lower() or "secretario" in c.lower()]
-        col_nome_sec = col_nome_sec if col_nome_sec else df_sec.columns
+        # Filtra inteligentemente o nome da coluna de Nome e Telefone
+        col_nome_sec_lista = [c for c in df_sec.columns if "nome" in c.lower() or "secretario" in c.lower()]
+        col_nome_sec = col_nome_sec_lista[0] if col_nome_sec_lista else df_sec.columns[0]
         
-        col_fone_sec = [c for c in df_sec.columns if "tel" in c.lower() or "cel" in c.lower() or "fone" in c.lower() or "whatsapp" in c.lower()]
-        col_fone_sec = col_fone_sec if col_fone_sec else df_sec.columns
+        col_fone_sec_lista = [c for c in df_sec.columns if "tel" in c.lower() or "cel" in c.lower() or "fone" in c.lower() or "whatsapp" in c.lower()]
+        col_fone_sec = col_fone_sec_lista[0] if col_fone_sec_lista else df_sec.columns[min(2, len(df_sec.columns)-1)]
         
         filtro_sec = df_sec[df_sec[col_muni_sec].str.lower().str.strip() == muni.lower().strip()]
+        
         if not filtro_sec.empty:
-            nome_secretario = filtro_sec.iloc.get(col_nome_sec, "Não Informado")
-            fone_secretario = filtro_sec.iloc.get(col_fone_sec, "")
+            # CORREÇÃO: Acessa a primeira linha encontrada [0] de forma segura antes do .get()
+            nome_secretario = filtro_sec.iloc[0].get(col_nome_sec, "Não Informado")
+            fone_secretario = filtro_sec.iloc[0].get(col_fone_sec, "")
 
     st.write(f"**Secretário(a) de Saúde:** {nome_secretario}")
     st.write(f"**WhatsApp/Telefone:** {fone_secretario if fone_secretario else 'Não informado'}")
