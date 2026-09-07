@@ -68,7 +68,6 @@ st.sidebar.markdown("---")
 
 obras_filtradas = pd.DataFrame()
 muni, uf, prop_escolhida, msg_contexto, programa_nome = "", "PB", "", "", ""
-
 # =========================================================================
 # FLUXO 1: OBRAS NOVO PAC
 # =========================================================================
@@ -110,6 +109,14 @@ if tipo_acompanhamento == "Obras Novo PAC":
         dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
         prioridade = dados_obra.get("Prioridade de contato", "")
         
+        # --- RESGATE SEGURO DOS NOVOS CAMPOS DO NOVO PAC ---
+        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
+        data_contato = dados_obra.get("Data do contato", "-") or "-"
+        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
+        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
+        prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
+        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+        
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
@@ -122,7 +129,27 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
 
-        msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}"
+        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO (PAC) ---
+        st.markdown("---")
+        st.markdown("### 📞 Acompanhamento e Respostas do Ente (Novo PAC)")
+        col_c1, col_c2, col_c3 = st.columns(3)
+        with col_c1:
+            st.metric("Quem fez o contato?", quem_contato)
+            st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
+        with col_c2:
+            st.metric("Data do contato", data_contato)
+            st.metric("Previsão de conclusão", prev_conclusao)
+        with col_c3:
+            st.write("")
+            st.metric("Previsão de inauguração", prev_inauguracao)
+            
+        st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
+
+        msg_contexto = (
+            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n• Obs Ente: {obs_problemas}"
+        )
         programa_nome = "Obras Novo PAC"
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
@@ -167,6 +194,14 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
         prioridade = dados_obra.get("Prioridade de contato", "")
         
+        # --- RESGATE SEGURO DOS NOVOS CAMPOS DA RETOMADA ---
+        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
+        data_contato = dados_obra.get("Data do contato", "-") or "-"
+        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
+        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
+        prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
+        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+        
         col_r1, col_r2 = st.columns(2)
         with col_r1:
             st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
@@ -180,7 +215,27 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
         
-        msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}"
+        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO (RETOMADA) ---
+        st.markdown("---")
+        st.markdown("### 📞 Acompanhamento e Respostas do Ente (Retomada de Obras)")
+        col_rc1, col_rc2, col_rc3 = st.columns(3)
+        with col_rc1:
+            st.metric("Quem fez o contato?", quem_contato)
+            st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
+        with col_rc2:
+            st.metric("Data do contato", data_contato)
+            st.metric("Previsão de conclusão", prev_conclusao)
+        with col_rc3:
+            st.write("")
+            st.metric("Previsão de inauguração", prev_inauguracao)
+            
+        st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
+
+        msg_contexto = (
+            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n• Obs Ente: {obs_problemas}"
+        )
         programa_nome = "Retomada de Obras Paralisadas"
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
@@ -236,7 +291,6 @@ else:
         
         for m_limpo in muni_simultaneos:
             if m_limpo in coordenadas_pb:
-                # CORREÇÃO: Captura segura da string usando .iloc[0] antes de aplicar o .upper()
                 filtro_nome = df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo]["Município"]
                 nome_real = str(filtro_nome.iloc[0]).upper() if not filtro_nome.empty else m_limpo.upper()
                 
@@ -258,11 +312,11 @@ else:
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
         
         with st.expander("📊 Detalhamento Estatístico do Painel Geográfico"):
-            # CORREÇÃO: Ordenação segura e troca de 'index=False' por 'hide_index=True' para a nova versão do Streamlit
             df_ordenado = df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False)
             st.dataframe(df_ordenado, use_container_width=True, hide_index=True)
     else:
         st.info("ℹ️ Selecione uma opção acima ou verifique os arquivos da planilha para renderizar os pontos no mapa.")
+
 # =========================================================================
 # BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (MANTIDO SEGURO)
 # =========================================================================
@@ -301,8 +355,13 @@ if not obras_filtradas.empty and muni:
     
     if fone_secretario:
         num_limpo = "".join(filter(str.isdigit, fone_secretario))
-        if len(num_limpo) <= 11 and num_limpo != "": num_limpo = f"55{num_limpo}"
-        st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web](https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)})")
+        if len(num_limpo) == 11 and not num_limpo.startswith("55"): 
+            num_limpo = f"55{num_limpo}"
+        elif len(num_limpo) == 9: 
+            num_limpo = f"5583{num_limpo}"
+            
+        link_api_wa = f"https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)}"
+        st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web]({link_api_wa})")
     
     st.code(mensagem_whatsapp, language="text")
 
@@ -310,7 +369,6 @@ if not obras_filtradas.empty and muni:
 st.markdown("---")
 st.markdown(
     "<p style='text-align:right; font-size:12px; color:gray; font-style:italic;'>"
-    "Desenvolvido por: Bartolomeu Lima (Corecon-ES 1541) & Gemini AI 🤝 2026</p>",
+    "Desenvolvido por: Bartolomeu Lima (Corecon-ES 1541) & AI Workspace 🤝 2026</p>",
     unsafe_allow_html=True
 )
-
