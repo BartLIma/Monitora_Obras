@@ -172,11 +172,10 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
     elif metodo_busca == "Proposta":
         busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_ret")
         if busca_prop.strip(): obras_filtradas = df_ret[df_ret["Proposta"] == busca_prop.strip()]
-    elif metodo_busca == "Prioridade de Contato":
-        lista_prioridades = sorted([p for p in df_ret["Prioridade de contato"].unique() if p != ""])
-        busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
-        if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
-
+   elif metodo_busca == "Prioridade de Contato":
+        lista_prioridades = sorted([p for p in df_pac["Prioridade de contato"].unique() if p != ""])
+        busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
+        if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
     if not obras_filtradas.empty:
         opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
