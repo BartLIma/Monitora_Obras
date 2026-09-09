@@ -89,20 +89,11 @@ if tipo_acompanhamento == "Obras Novo PAC":
     elif metodo_busca == "Proposta":
         busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_pac")
         if busca_prop.strip(): obras_filtradas = df_pac[df_pac["Proposta"] == busca_prop.strip()]
-     elif metodo_busca == "Prioridade de Contato":
-        # CORREÇÃO CRÍTICA: Localiza a coluna de prioridade mesmo que mude a grafia, acentos ou espaços
-        colunas_ret_limpas = {c.strip().lower().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("ã","a").replace("ç","c"): c for c in df_ret.columns}
-        
-        # Procura por qualquer coluna que contenha "prioridade" no nome
-        col_prioridade_real = next((orig for limpa, orig in colunas_ret_limpas.items() if "prioridade" in limpa), None)
-        
-        if col_prioridade_real:
-            lista_prioridades = sorted([p for p in df_ret[col_prioridade_real].unique() if p != ""])
-            busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
-            if busca_prio: 
-                obras_filtradas = df_ret[df_ret[col_prioridade_real] == busca_prio]
-        else:
-            st.error("⚠️ Não foi possível localizar a coluna de 'Prioridade' no arquivo da Retomada. Verifique o cabeçalho da planilha.")
+    elif metodo_busca == "Prioridade de Contato":
+        lista_prioridades = sorted([p for p in df_pac["Prioridade de contato"].unique() if p != ""])
+        busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
+        if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
+
     if not obras_filtradas.empty:
         opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", opcoes_obras, key="sel_pac")
