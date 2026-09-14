@@ -112,9 +112,10 @@ if tipo_acompanhamento == "Obras Novo PAC":
         # --- RESGATE SEGURO DOS NOVOS CAMPOS DO NOVO PAC ---
         quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
         data_contato = dados_obra.get("Data do contato", "-") or "-"
+        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
         exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
         prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
-        prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
+        prev_inauguracao = dados_obra.get("Data/Previsão de integração informada pelo ente", "-") or "-"
         obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
         
         col1, col2 = st.columns(2)
@@ -129,7 +130,7 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
 
-        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO (PAC) ---
+        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (PAC) ---
         st.markdown("---")
         st.markdown("### 📞 Acompanhamento e Respostas do Ente (Novo PAC)")
         col_c1, col_c2, col_c3 = st.columns(3)
@@ -143,14 +144,19 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.write("")
             st.metric("Previsão de inauguração", prev_inauguracao)
             
+        # Posicionamento imediato da coluna Ações logo após os dados de contato
+        st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
+        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
         msg_contexto = (
             f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n• Obs Ente: {obs_problemas}"
+            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         )
         programa_nome = "Obras Novo PAC"
+
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
 # =========================================================================
@@ -197,6 +203,7 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         # --- RESGATE SEGURO DOS NOVOS CAMPOS DA RETOMADA ---
         quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
         data_contato = dados_obra.get("Data do contato", "-") or "-"
+        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
         exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
         prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
         prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
@@ -215,7 +222,7 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
         
-        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO (RETOMADA) ---
+        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (RETOMADA) ---
         st.markdown("---")
         st.markdown("### 📞 Acompanhamento e Respostas do Ente (Retomada de Obras)")
         col_rc1, col_rc2, col_rc3 = st.columns(3)
@@ -229,14 +236,19 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.write("")
             st.metric("Previsão de inauguração", prev_inauguracao)
             
+        # Posicionamento imediato da coluna Ações logo após os dados de contato
+        st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
+        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
         msg_contexto = (
             f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n• Obs Ente: {obs_problemas}"
+            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+            f"• Último Contato por: {quem_contato} em {data_contato}\n"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         )
         programa_nome = "Retomada de Obras Paralisadas"
+
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
 # =========================================================================
@@ -340,6 +352,8 @@ if not obras_filtradas.empty and muni:
     st.write(f"**WhatsApp/Telefone:** {fone_secretario if fone_secretario else 'Não informado'}")
 
     saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
+    
+    # O corpo da mensagem puxa automaticamente as Ações configuradas no msg_contexto das partes anteriores
     mensagem_whatsapp = (
         f"{saudacao},\n\n"
         f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
