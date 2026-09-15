@@ -249,7 +249,7 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
      f"• Último Contato por: {quem_contato} em {data_contato}\n"
      f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         )
-        programa_nome = "Obras Novo PAC"
+    programa_nome = "Obras Novo PAC"
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
 # =========================================================================
