@@ -242,7 +242,7 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
         # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
- msg_contexto = (
+    msg_contexto = (
      f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
      f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
      f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
