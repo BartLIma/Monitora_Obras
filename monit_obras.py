@@ -247,7 +247,8 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
     f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
     f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"  # <-- ADICIONE APENAS ESTA LINHA
     f"• Último Contato por: {quem_contato} em {data_contato}\n"
-    f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}")
+    f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+)
         programa_nome = "Retomada de Obras Paralisadas"
 
 # =========================================================================
