@@ -68,202 +68,185 @@ st.sidebar.markdown("---")
 
 obras_filtradas = pd.DataFrame()
 muni, uf, prop_escolhida, msg_contexto, programa_nome = "", "PB", "", "", ""
-# =========================================================================
-# FLUXO 1: OBRAS NOVO PAC
-# =========================================================================
-if tipo_acompanhamento == "Obras Novo PAC":
-    st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
-    st.subheader("⚡ Painel de Controle — Novo PAC")
+st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
+st.subheader("⚡ Painel de Controle — Novo PAC")
+
+if df_pac.empty:
+    st.error("⚠️ Planilha do Novo PAC não carregada."); st.stop()
     
-    if df_pac.empty:
-        st.error("⚠️ Planilha do Novo PAC não carregada."); st.stop()
-        
-    for col in df_pac.columns: df_pac[col] = df_pac[col].fillna("").astype(str).str.strip()
+for col in df_pac.columns: df_pac[col] = df_pac[col].fillna("").astype(str).str.strip()
+
+metodo_busca = st.sidebar.radio("Filtrar PAC por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_pac")
+
+if metodo_busca == "Município":
+    busca_muni = st.text_input("Digite o nome do Município:", key="muni_pac")
+    if busca_muni.strip():
+        obras_filtradas = df_pac[df_pac["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
+elif metodo_busca == "Proposta":
+    busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_pac")
+    if busca_prop.strip(): obras_filtradas = df_pac[df_pac["Proposta"] == busca_prop.strip()]
+elif metodo_busca == "Prioridade de Contato":
+    # Corrigido a string para "Prioridade de contato" para bater com o padrão de caixa do seu DataFrame
+    col_prio = "Prioridade de contato" if "Prioridade de contato" in df_pac.columns else "Prioridade de contato"
+    lista_prioridades = sorted([p for p in df_pac[col_prio].unique() if p != ""])
+    busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
+    if busca_prio: obras_filtradas = df_pac[df_pac[col_prio] == busca_prio]
+
+if not obras_filtradas.empty:
+    opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
+    obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", opcoes_obras, key="sel_pac")
     
-    metodo_busca = st.sidebar.radio("Filtrar PAC por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_pac")
-
-    if metodo_busca == "Município":
-        busca_muni = st.text_input("Digite o nome do Município:", key="muni_pac")
-        if busca_muni.strip():
-            obras_filtradas = df_pac[df_pac["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
-    elif metodo_busca == "Proposta":
-        busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_pac")
-        if busca_prop.strip(): obras_filtradas = df_pac[df_pac["Proposta"] == busca_prop.strip()]
-    elif metodo_busca == "Prioridade de Contato":
-        lista_prioridades = sorted([p for p in df_pac["Prioridade de contato"].unique() if p != ""])
-        busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
-        if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
-
-    if not obras_filtradas.empty:
-        opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
-        obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", opcoes_obras, key="sel_pac")
-        
-        prop_escolhida = obra_selecionada.split(" - ")[0].strip()
-        dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
-        
-        muni = dados_obra.get("Município", "").upper()
-        unidade = dados_obra.get("Nome da unidade", "")
-        comp = dados_obra.get("Componente", "")
-        sit_sismob = dados_obra.get("Situação no SISMOB", "")
-        exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
-        dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
-        prioridade = dados_obra.get("Prioridade de contato", "")
-        
-        # --- RESGATE SEGURO DOS NOVOS CAMPOS DO NOVO PAC ---
-        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
-        data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
-        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
-        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
-        prev_inauguracao = dados_obra.get("Data/Previsão de integração informada pelo ente", "-") or "-"
-        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
-            st.markdown(f"**Município:** {muni}")
-            st.markdown(f"**Unidade:** {unidade}")
-            st.markdown(f"**Componente:** {comp}")
-        with col2:
-            st.markdown(f"**Situação SISMOB:** {sit_sismob}")
-            st.markdown(f"**Execução Física:** {exec_fisica}%")
-            st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
-            st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
-
-        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (PAC) ---
-        st.markdown("---")
-        st.markdown("### 📞 Acompanhamento e Respostas do Ente (Novo PAC)")
-        col_c1, col_c2, col_c3 = st.columns(3)
-        with col_c1:
-            st.metric("Quem fez o contato?", quem_contato)
-            st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
-        with col_c2:
-            st.metric("Data do contato", data_contato)
-            st.metric("Previsão de conclusão", prev_conclusao)
-        with col_c3:
-            st.write("")
-            st.metric("Previsão de inauguração", prev_inauguracao)
-            
-        # Posicionamento imediato da coluna Ações logo após os dados de contato
-        st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
-        st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
-
-        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
-        msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
-        )
-        programa_nome = "Obras Novo PAC"
-
-# =========================================================================
-# FLUXO 2: RETOMADA DE OBRAS PARALISADAS
-# =========================================================================
-elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
-    st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
-    st.subheader("🔄 Painel de Controle — Retomada de Obras")
+    prop_escolhida = obra_selecionada.split(" - ")[0].strip()
+    dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
     
-    if df_ret.empty:
-        st.error("⚠️ Planilha de Retomada não carregada."); st.stop()
-        
-    for col in df_ret.columns: df_ret[col] = df_ret[col].fillna("").astype(str).str.strip()
-
-    metodo_busca = st.sidebar.radio("Filtrar Retomada por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_ret")
-
-    if metodo_busca == "Município":
-        busca_muni = st.text_input("Digite o nome do Município:", key="muni_ret")
-        if busca_muni.strip():
-            obras_filtradas = df_ret[df_ret["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
-    elif metodo_busca == "Proposta":
-        busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_ret")
-        if busca_prop.strip(): obras_filtradas = df_ret[df_ret["Proposta"] == busca_prop.strip()]
-    elif metodo_busca == "Prioridade de Contato":
-        lista_prioridades = sorted([p for p in df_ret["Prioridade de contato"].unique() if p != ""])
-        busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
-        if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
-
-    if not obras_filtradas.empty:
-        opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
-        obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
-        
-        prop_escolhida = obra_selecionada.split(" - ")[0].strip()
-        dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
-        
-        muni = dados_obra.get("Município", "").upper()
-        unidade = dados_obra.get("Nome da unidade", "")
-        comp = dados_obra.get("Componente", "")
-        porte = dados_obra.get("Porte", "")
-        modalidade = dados_obra.get("Modalidade", "")
-        sit_sismob = dados_obra.get("Situação no SISMOB", "")
-        exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
-        dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
-        prioridade = dados_obra.get("Prioridade de contato", "")
-        
-        # --- RESGATE SEGURO DOS NOVOS CAMPOS DA RETOMADA ---
-        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
-        data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"  # <--- Nova captura
-        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
-        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
-        prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
-        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
-        
-        col_r1, col_r2 = st.columns(2)
-        with col_r1:
-            st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
-            st.markdown(f"**Município:** {muni}")
-            st.markdown(f"**Unidade:** {unidade}")
-            st.markdown(f"**Componente:** {comp}")
-            st.markdown(f"**Porte / Modalidade:** {porte} | {modalidade}")
-        with col_r2:
-            st.markdown(f"**Situação SISMOB:** {sit_sismob}")
-            st.markdown(f"**Execução Física:** {exec_fisica}%")
-            st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
-            st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
-        
-        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (RETOMADA) ---
-        st.markdown("---")
-        st.markdown("### 📞 Acompanhamento e Respostas do Ente (Retomada de Obras)")
-        col_rc1, col_rc2, col_rc3 = st.columns(3)
-        with col_rc1:
-            st.metric("Quem fez o contato?", quem_contato)
-            st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
-        with col_rc2:
-            st.metric("Data do contato", data_contato)
-            st.metric("Previsão de conclusão", prev_conclusao)
-        with col_rc3:
-            st.write("")
-            st.metric("Previsão de inauguração", prev_inauguracao)
-            
-        # Posicionamento imediato da coluna Ações logo após os dados de contato
-        st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
-        st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
-
-        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
-        msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
-        )
-        programa_nome = "Retomada de Obras Paralisadas"
-
-# =========================================================================
-# FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
-# =========================================================================
-else:
-    st.title("🗺️ Painel de Georreferenciamento das Transferências")
-    st.subheader("Análise Territorial de Demandas de Infraestrutura em Saúde")
+    muni = dados_obra.get("Município", "").upper()
+    unidade = dados_obra.get("Nome da unidade", "")
+    comp = dados_obra.get("Componente", "")
+    sit_sismob = dados_obra.get("Situação no SISMOB", "")
+    exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
+    dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
+    prioridade = dados_obra.get("Prioridade de contato", "")
     
-    modo_mapa = st.radio(
-        "Selecione o filtro geográfico de mapa:",
-        ["Apenas Obras Novo PAC", "Apenas Retomada de Obras Paralisadas", "🚨 Mapeamento Crítico (PAC e Retomada Simultâneos)"],
-        horizontal=True
+    # --- RESGATE SEGURO DA DATA DO REPASSE ---
+    data_repasse = dados_obra.get("Data do repasse", "-") or "-"
+    
+    # --- RESGATE SEGURO DOS NOVOS CAMPOS DO NOVO PAC ---
+    quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
+    data_contato = dados_obra.get("Data do contato", "-") or "-"
+    acoes_realizadas = dados_obra.get("Ações", "-") or "-"  
+    exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
+    prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
+    prev_inauguracao = dados_obra.get("Data/Previsão de integração informada pelo ente", "-") or "-"
+    obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
+        st.markdown(f"**Município:** {muni}")
+        st.markdown(f"**Unidade:** {unidade}")
+        st.markdown(f"**Componente:** {comp}")
+        st.markdown(f"**📅 Data do Repasse:** {data_repasse}") # <--- Exibição do campo aqui
+    with col2:
+        st.markdown(f"**Situação SISMOB:** {sit_sismob}")
+        st.markdown(f"**Execução Física:** {exec_fisica}%")
+        st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
+        st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
+
+    # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (PAC) ---
+    st.markdown("---")
+    st.markdown("### 📞 Acompanhamento e Respostas do Ente (Novo PAC)")
+    col_c1, col_c2, col_c3 = st.columns(3)
+    with col_c1:
+        st.metric("Quem fez o contato?", quem_contato)
+        st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
+    with col_c2:
+        st.metric("Data do contato", data_contato)
+        st.metric("Previsão de conclusão", prev_conclusao)
+    with col_c3:
+        st.metric("Data do repasse financeiro", data_repasse) # <--- Métrica adicionada
+        st.metric("Previsão de inauguração", prev_inauguracao)
+        
+    # Posicionamento imediato da coluna Ações logo após os dados de contato
+    st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
+    st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
+
+    # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
+    msg_contexto = (
+        f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+        f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n"
+        f"• Data do Repasse: {data_repasse}\n• Prioridade: {prioridade}\n" # <--- Linha do repasse adicionada aqui!
+        f"• Último Contato por: {quem_contato} em {data_contato}\n"
+        f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
     )
+    programa_nome = "Obras Novo PAC"
+for col in df_ret.columns: df_ret[col] = df_ret[col].fillna("").astype(str).str.strip()
+
+metodo_busca = st.sidebar.radio("Filtrar Retomada por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_ret")
+
+if metodo_busca == "Município":
+    busca_muni = st.text_input("Digite o nome do Município:", key="muni_ret")
+    if busca_muni.strip():
+        obras_filtradas = df_ret[df_ret["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
+elif metodo_busca == "Proposta":
+    busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_ret")
+    if busca_prop.strip(): obras_filtradas = df_ret[df_ret["Proposta"] == busca_prop.strip()]
+elif metodo_busca == "Prioridade de Contato":
+    lista_prioridades = sorted([p for p in df_ret["Prioridade de contato"].unique() if p != ""])
+    busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
+    if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
+
+if not obras_filtradas.empty:
+    opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
+    obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
     
-    dados_mapa = []
+    prop_escolhida = obra_selecionada.split(" - ")[0].strip()
+    dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
     
+    muni = dados_obra.get("Município", "").upper()
+    unidade = dados_obra.get("Nome da unidade", "")
+    comp = dados_obra.get("Componente", "")
+    porte = dados_obra.get("Porte", "")
+    modalidade = dados_obra.get("Modalidade", "")
+    sit_sismob = dados_obra.get("Situação no SISMOB", "")
+    exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
+    dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
+    prioridade = dados_obra.get("Prioridade de contato", "")
+    
+    # --- RESGATE SEGURO DA DATA DO REPASSE ---
+    data_repasse = dados_obra.get("Data do repasse", "-") or "-"
+    
+    # --- RESGATE SEGURO DOS NOVOS CAMPOS DA RETOMADA ---
+    quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
+    data_contato = dados_obra.get("Data do contato", "-") or "-"
+    acoes_realizadas = dados_obra.get("Ações", "-") or "-"  
+    exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
+    prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
+    prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
+    obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+    
+    col_r1, col_r2 = st.columns(2)
+    with col_r1:
+        st.markdown(f"**Proposta:** {prop_escolhida} | **UF:** PB")
+        st.markdown(f"**Município:** {muni}")
+        st.markdown(f"**Unidade:** {unidade}")
+        st.markdown(f"**Componente:** {comp}")
+        st.markdown(f"**Porte / Modalidade:** {porte} | {modalidade}")
+        st.markdown(f"**📅 Data do Repasse:** {data_repasse}") # <--- Exibição do campo aqui
+    with col_r2:
+        st.markdown(f"**Situação SISMOB:** {sit_sismob}")
+        st.markdown(f"**Execução Física:** {exec_fisica}%")
+        st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
+        st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
+    
+    # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (RETOMADA) ---
+    st.markdown("---")
+    st.markdown("### 📞 Acompanhamento e Respostas do Ente (Retomada de Obras)")
+    col_rc1, col_rc2, col_rc3 = st.columns(3)
+    with col_rc1:
+        st.metric("Quem fez o contato?", quem_contato)
+        st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
+    with col_rc2:
+        st.metric("Data do contato", data_contato)
+        st.metric("Previsão de conclusão", prev_conclusao)
+    with col_rc3:
+        st.metric("Data do repasse financeiro", data_repasse) # <--- Métrica adicionada substituindo o st.write
+        st.metric("Previsão de inauguração", prev_inauguracao)
+        
+    # Posicionamento imediato da coluna Ações logo após os dados de contato
+    st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
+    st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
+
+    # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
+    msg_contexto = (
+        f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+        f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n"
+        f"• Data do Repasse: {data_repasse}\n• Prioridade: {prioridade}\n" # <--- Linha do repasse adicionada aqui!
+        f"• Último Contato por: {quem_contato} em {data_contato}\n"
+        f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+    )
+    programa_nome = "Retomada de Obras Paralisadas"
+
+
     # LÓGICA 1: Apenas PAC
     if modo_mapa == "Apenas Obras Novo PAC" and not df_pac.empty:
         df_unicos = df_pac.drop_duplicates(subset=["Município"])
@@ -353,10 +336,10 @@ if not obras_filtradas.empty and muni:
 
     saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
     
-    # O corpo da mensagem puxa automaticamente as Ações configuradas no msg_contexto das partes anteriores
+    # O corpo da mensagem puxa automaticamente as variáveis montadas dinamicamente no Bloco 2 e Bloco 3
     mensagem_whatsapp = (
         f"{saudacao},\n\n"
-        f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
+        f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de *{programa_nome}*:\n\n"
         f"📌 *DADOS DO INSTRUMENTO:*\n"
         f"• Município: {muni} - PB\n"
         f"• Proposta Nº: {prop_escolhida}\n"
@@ -374,6 +357,7 @@ if not obras_filtradas.empty and muni:
         elif len(num_limpo) == 9: 
             num_limpo = f"5583{num_limpo}"
             
+        # Link da API oficial do WhatsApp corrigido e otimizado com a codificação do texto
         link_api_wa = f"https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)}"
         st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web]({link_api_wa})")
     
