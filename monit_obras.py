@@ -243,11 +243,11 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
 
         # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
  msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+     f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+     f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+     f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
+     f"• Último Contato por: {quem_contato} em {data_contato}\n"
+     f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         )
         programa_nome = "Obras Novo PAC"
 # =========================================================================
