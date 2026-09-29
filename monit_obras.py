@@ -417,3 +417,9 @@ st.markdown(
     "Desenvolvido por: Bartolomeu Lima (Corecon-ES 1541) & AI Workspace 🤝 2026</p>",
     unsafe_allow_html=True
 )
+# --- ROTINA PARA EXIBIR O SELO TABAJARA NO SEU RODAPÉ ---
+st.sidebar.markdown("---")
+col_selo, _ = st.sidebar.columns([1, 2])
+with col_selo:
+    # Basta salvar a imagem com o nome 'selo_durex.png' na mesma pasta do GitHub
+    st.image("selo_durex.png", caption="Tabajara Resolution", width=110)
