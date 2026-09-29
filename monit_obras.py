@@ -206,35 +206,34 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
 
     if not obras_filtradas.empty:
-        # A MUDANÇA CRUCIAL: Guardamos o ID numérico real da linha (idx) dentro de um dicionário
         opcoes_obras = {}
         for idx, row in obras_filtradas.iterrows():
             opcoes_obras[f"{row['Proposta']} - {row['Nome da unidade']} ({row['Município']})"] = idx
             
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", sorted(opcoes_obras.keys()), key="sel_ret")
         
-        # Resgata os dados diretamente pelo ID único da linha, eliminando o erro de etiquetas duplicadas!
+        # --- CORREÇÃO: Resgate absoluto por .loc baseado no ID único da linha ---
         idx_escolhido = opcoes_obras[obra_selecionada]
         dados_obra = obras_filtradas.loc[idx_escolhido]
-        prop_escolhida = dados_obra["Proposta"]
+        prop_escolhida = str(dados_obra["Proposta"])
         
-        muni = dados_obra["Município"].upper()
-        unidade = dados_obra["Nome da unidade"]
-        comp = dados_obra["Componente"]
-        porte = dados_obra["Porte"]
-        modalidade = dados_obra["Modalidade"]
-        sit_sismob = dados_obra["Situação no SISMOB"]
-        exec_fisica = dados_obra["Execução física (%) SISMOB"]
-        dias_sem_mon = dados_obra["Dias sem monitoramento SISMOB"]
-        prioridade = dados_obra["Prioridade de contato"]
+        muni = str(dados_obra["Município"]).upper()
+        unidade = str(dados_obra["Nome da unidade"])
+        comp = str(dados_obra["Componente"])
+        porte = str(dados_obra["Porte"])
+        modalidade = str(dados_obra["Modalidade"])
+        sit_sismob = str(dados_obra["Situação no SISMOB"])
+        exec_fisica = str(dados_obra["Execução física (%) SISMOB"])
+        dias_sem_mon = str(dados_obra["Dias sem monitoramento SISMOB"])
+        prioridade = str(dados_obra["Prioridade de contato"])
         
-        quem_contato = dados_obra["Quem fez o contato?"]
-        data_contato = dados_obra["Data do contato"]
-        acoes_realizadas = dados_obra["Ações"]
-        exec_ente = dados_obra["Execução informada pelo ente (%)"]
-        prev_conclusao = dados_obra["Data/Previsão de conclusão informada pelo ente"]
-        prev_inauguracao = dados_obra["Data/Previsão de integração informada pelo ente"]
-        obs_problemas = dados_obra["Observações e problemas"]
+        quem_contato = str(dados_obra["Quem fez o contato?"])
+        data_contato = str(dados_obra["Data do contato"])
+        acoes_realizadas = str(dados_obra["Ações"])
+        exec_ente = str(dados_obra["Execução informada pelo ente (%)"])
+        prev_conclusao = str(dados_obra["Data/Previsão de conclusão informada pelo ente"])
+        prev_inauguracao = str(dados_obra["Data/Previsão de integração informada pelo ente"])
+        obs_problemas = str(dados_obra["Observações e problemas"])
         
         col_r1, col_r2 = st.columns(2)
         with col_r1:
@@ -259,13 +258,14 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.metric("Data do contato", data_contato)
             st.metric("Previsão de conclusão", prev_conclusao)
         with col_rc3:
-            st.write(""); st.metric("Previsão de inauguracao", prev_inauguracao)
+            st.write(""); st.metric("Previsão de inauguração", prev_inauguracao)
             
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
         msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n• Último Contato por: {quem_contato} em {data_contato}\n• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         programa_nome = "Retomada de Obras Paralisadas"
+
 
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
