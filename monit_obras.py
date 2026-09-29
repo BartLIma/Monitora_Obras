@@ -1,5 +1,5 @@
 import pandas as pd
-import streamlit as st
+import streamlit st
 import os
 import urllib.parse
 import unicodedata
@@ -68,7 +68,7 @@ def normalizar_e_padronizar_df(df_alvo):
         elif "componente" in col_limpa: mapeamento[col] = "Componente"
         elif "situacao" in col_limpa: mapeamento[col] = "Situação no SISMOB"
         elif "execucaofisica" in col_limpa: mapeamento[col] = "Execução física (%) SISMOB"
-        elif "diassem" in col_limpa: mapeamento_obras[col] = "Dias sem monitoramento SISMOB"
+        elif "diassem" in col_limpa: mapeamento[col] = "Dias sem monitoramento SISMOB" # 👈 CORREÇÃO EFETUADA AQUI
         elif "porte" in col_limpa: mapeamento[col] = "Porte"
         elif "modalidade" in col_limpa: mapeamento[col] = "Modalidade"
         elif "quem" in col_limpa: mapeamento[col] = "Quem fez o contato?"
@@ -76,12 +76,11 @@ def normalizar_e_padronizar_df(df_alvo):
         elif "acoes" in col_limpa: mapeamento[col] = "Ações"
         elif "execucaoinformada" in col_limpa: mapeamento[col] = "Execução informada pelo ente (%)"
         elif "previsaodeconclusao" in col_limpa: mapeamento[col] = "Data/Previsão de conclusão informada pelo ente"
-        elif "previsaodeinteg" in col_limpa or "previsaodeinaug" in col_limpa: mapeamento[col] = "Data/Previsão de integração informada pelo ente"
+        elif "previsaodeinteg" in col_limpa or "previsaodeinaug" in col_limpa: mapeamento[col] = "Data/Previsão de integration informada pelo ente"
         elif "observac" in col_limpa: mapeamento[col] = "Observações e problemas"
         
     df_alvo = df_alvo.rename(columns=mapeamento)
     
-    # Garante a existência das colunas para não quebrar referências
     colunas_obrigatorias = ["Município", "Proposta", "Prioridade de contato", "Nome da unidade", "Componente", "Situação no SISMOB", "Execução física (%) SISMOB", "Dias sem monitoramento SISMOB", "Porte", "Modalidade", "Quem fez o contato?", "Data do contato", "Ações", "Execução informada pelo ente (%)", "Data/Previsão de conclusão informada pelo ente", "Data/Previsão de integração informada pelo ente", "Observações e problemas"]
     for c in colunas_obrigatorias:
         if c not in df_alvo.columns:
@@ -111,52 +110,43 @@ muni, uf, prop_escolhida, msg_contexto, programa_nome = "", "PB", "", "", ""
 if tipo_acompanhamento == "Obras Novo PAC":
     st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
     st.subheader("⚡ Painel de Controle — Novo PAC")
-    
-    if df_pac.empty:
-        st.error("⚠️ Planilha do Novo PAC não carregada."); st.stop()
-        
-    for col in df_pac.columns: df_pac[col] = df_pac[col].fillna("").astype(str).str.strip()
+    if df_pac.empty: st.error("⚠️ Planilha do Novo PAC não carregada."); st.stop()
     
     metodo_busca = st.sidebar.radio("Filtrar PAC por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_pac")
-
     if metodo_busca == "Município":
         busca_muni = st.text_input("Digite o nome do Município:", key="muni_pac")
-        if busca_muni.strip():
-            obras_filtradas = df_pac[df_pac["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
+        if busca_muni.strip(): obras_filtradas = df_pac[df_pac["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
     elif metodo_busca == "Proposta":
         busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_pac")
         if busca_prop.strip(): obras_filtradas = df_pac[df_pac["Proposta"] == busca_prop.strip()]
     elif metodo_busca == "Prioridade de Contato":
-        lista_prioridades = sorted([p for p in df_pac["Prioridade de contato"].unique() if p != ""])
+        lista_prioridades = sorted([p for p in df_pac["Prioridade de contato"].unique() if p != "-" and p != ""])
         busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_pac_sel")
         if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
 
     if not obras_filtradas.empty:
-        opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
+        opcoes_obras = [f"{row['Proposta']} - {row['Nome da unidade']} ({row['Município']})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", opcoes_obras, key="sel_pac")
-        
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
-        muni = dados_obra.get("Município", "").upper()
-        unidade = dados_obra.get("Nome da unidade", "")
-        comp = dados_obra.get("Componente", "")
-        sit_sismob = dados_obra.get("Situação no SISMOB", "")
-        exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
-        dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
-        prioridade = dados_obra.get("Prioridade de contato", "")
+        muni = dados_obra["Município"].upper()
+        unidade = dados_obra["Nome da unidade"]
+        comp = dados_obra["Componente"]
+        sit_sismob = dados_obra["Situação no SISMOB"]
+        exec_fisica = dados_obra["Execução física (%) SISMOB"]
+        dias_sem_mon = dados_obra["Dias sem monitoramento SISMOB"]
+        prioridade = dados_obra["Prioridade de contato"]
+        porte = dados_obra["Porte"]
+        modalidade = dados_obra["Modalidade"]
         
-        # --- ALTERAÇÃO: RESGATE DAS DUAS COLUNAS FALTANTES NO NOVO PAC ---
-        porte = dados_obra.get("Porte", "Não Informado")
-        modalidade = dados_obra.get("Modalidade", "Não Informado")
-        
-        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
-        data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"
-        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
-        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
-        prev_inauguracao = dados_obra.get("Data/Previsão de integração informada pelo ente", "-") or "-"
-        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+        quem_contato = dados_obra["Quem fez o contato?"]
+        data_contato = dados_obra["Data do contato"]
+        acoes_realizadas = dados_obra["Ações"]
+        exec_ente = dados_obra["Execução informada pelo ente (%)"]
+        prev_conclusao = dados_obra["Data/Previsão de conclusão informada pelo ente"]
+        prev_inauguracao = dados_obra["Data/Previsão de integração informada pelo ente"]
+        obs_problemas = dados_obra["Observações e problemas"]
         
         col1, col2 = st.columns(2)
         with col1:
@@ -164,7 +154,7 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.markdown(f"**Município:** {muni}")
             st.markdown(f"**Unidade:** {unidade}")
             st.markdown(f"**Componente:** {comp}")
-            st.markdown(f"**Porte / Modalidade:** <span style='color:#1E3A8A; font-weight:bold;'>{porte}</span> | <span style='color:#28a745; font-weight:bold;'>{modalidade}</span>", unsafe_allow_html=True) # 👈 EXIBIÇÃO NA TELA
+            st.markdown(f"**Porte / Modalidade:** <span style='color:#1E3A8A; font-weight:bold;'>{porte}</span> | <span style='color:#28a745; font-weight:bold;'>{modalidade}</span>", unsafe_allow_html=True)
         with col2:
             st.markdown(f"**Situação SISMOB:** {sit_sismob}")
             st.markdown(f"**Execução Física:** {exec_fisica}%")
@@ -181,70 +171,56 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.metric("Data do contato", data_contato)
             st.metric("Previsão de conclusão", prev_conclusao)
         with col_c3:
-            st.write("")
-            st.metric("Previsão de inauguração", prev_inauguracao)
+            st.write(""); st.metric("Previsão de inauguração", prev_inauguracao)
             
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
-        msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
-        )
-        programa_nome = "Obras Novo PAC" # 👈 AJUSTADO DINAMICAMENTE
+        msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n• Último Contato por: {quem_contato} em {data_contato}\n• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+        programa_nome = "Obras Novo PAC"
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
 # =========================================================================
 elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
     st.title("🏗️ Monitoramento Estratégico - Pendências de Obras no SISMOB")
     st.subheader("🔄 Painel de Controle — Retomada de Obras")
-    
-    if df_ret.empty:
-        st.error("⚠️ Planilha de Retomada não carregada."); st.stop()
-        
-    for col in df_ret.columns: df_ret[col] = df_ret[col].fillna("").astype(str).str.strip()
+    if df_ret.empty: st.error("⚠️ Planilha de Retomada não carregada."); st.stop()
 
     metodo_busca = st.sidebar.radio("Filtrar Retomada por:", ["Município", "Proposta", "Prioridade de Contato"], key="busca_ret")
-
     if metodo_busca == "Município":
         busca_muni = st.text_input("Digite o nome do Município:", key="muni_ret")
-        if busca_muni.strip():
-            obras_filtradas = df_ret[df_ret["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
+        if busca_muni.strip(): obras_filtradas = df_ret[df_ret["Município"].str.lower().str.contains(busca_muni.lower().strip(), na=False)]
     elif metodo_busca == "Proposta":
         busca_prop = st.text_input("Digite o número exato da Proposta:", key="prop_ret")
         if busca_prop.strip(): obras_filtradas = df_ret[df_ret["Proposta"] == busca_prop.strip()]
     elif metodo_busca == "Prioridade de Contato":
-        lista_prioridades = sorted([p for p in df_ret["Prioridade de contato"].unique() if p != ""])
+        lista_prioridades = sorted([p for p in df_ret["Prioridade de contato"].unique() if p != "-" and p != ""])
         busca_prio = st.selectbox("Selecione o nível de prioridade emergencial:", lista_prioridades, key="prio_ret_sel")
         if busca_prio: obras_filtradas = df_ret[df_ret["Prioridade de contato"] == busca_prio]
 
     if not obras_filtradas.empty:
-        opcoes_obras = [f"{row['Proposta']} - {row.get('Nome da unidade', 'Obra')} ({row.get('Município', 'PB')})" for idx, row in obras_filtradas.iterrows()]
+        opcoes_obras = [f"{row['Proposta']} - {row['Nome da unidade']} ({row['Município']})" for idx, row in obras_filtradas.iterrows()]
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", opcoes_obras, key="sel_ret")
-        
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
-        muni = dados_obra.get("Município", "").upper()
-        unidade = dados_obra.get("Nome da unidade", "")
-        comp = dados_obra.get("Componente", "")
-        porte = dados_obra.get("Porte", "Não Informado")
-        modalidade = dados_obra.get("Modalidade", "Não Informado")
-        sit_sismob = dados_obra.get("Situação no SISMOB", "")
-        exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
-        dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
-        prioridade = dados_obra.get("Prioridade de contato", "")
+        muni = dados_obra["Município"].upper()
+        unidade = dados_obra["Nome da unidade"]
+        comp = dados_obra["Componente"]
+        porte = dados_obra["Porte"]
+        modalidade = dados_obra["Modalidade"]
+        sit_sismob = dados_obra["Situação no SISMOB"]
+        exec_fisica = dados_obra["Execução física (%) SISMOB"]
+        dias_sem_mon = dados_obra["Dias sem monitoramento SISMOB"]
+        prioridade = dados_obra["Prioridade de contato"]
         
-        quem_contato = dados_obra.get("Quem fez o contato?", "-") or "-"
-        data_contato = dados_obra.get("Data do contato", "-") or "-"
-        acoes_realizadas = dados_obra.get("Ações", "-") or "-"
-        exec_ente = dados_obra.get("Execução informada pelo ente (%)", "-") or "-"
-        prev_conclusao = dados_obra.get("Data/Previsão de conclusão informada pelo ente", "-") or "-"
-        prev_inauguracao = dados_obra.get("Data/Previsão de inauguração informada pelo ente", "-") or "-"
-        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
+        quem_contato = dados_obra["Quem fez o contato?"]
+        data_contato = dados_obra["Data do contato"]
+        acoes_realizadas = dados_obra["Ações"]
+        exec_ente = dados_obra["Execução informada pelo ente (%)"]
+        prev_conclusao = dados_obra["Data/Previsão de conclusão informada pelo ente"]
+        prev_inauguracao = dados_obra["Data/Previsão de integração informada pelo ente"]
+        obs_problemas = dados_obra["Observações e problemas"]
         
         col_r1, col_r2 = st.columns(2)
         with col_r1:
@@ -269,62 +245,42 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
             st.metric("Data do contato", data_contato)
             st.metric("Previsão de conclusão", prev_conclusao)
         with col_rc3:
-            st.write("")
-            st.metric("Previsão de inauguração", prev_inauguracao)
+            st.write(""); st.metric("Previsão de inauguração", prev_inauguracao)
             
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
-        msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
-            f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
-        )
-        programa_nome = "Retomada de Obras Paralisadas" # 👈 AJUSTADO DINAMICAMENTE
+        msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n• Último Contato por: {quem_contato} em {data_contato}\n• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+        programa_nome = "Retomada de Obras Paralisadas"
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
 # =========================================================================
 else:
     st.title("🗺️ Painel de Georreferenciamento das Transferências")
-    st.subheader("Análise Territorial de Demandas de Infraestrutura em Saúde")
-    
-    modo_mapa = st.radio(
-        "Selecione o filtro geográfico de mapa:",
-        ["Apenas Obras Novo PAC", "Apenas Retomada de Obras Paralisadas", "🚨 Mapeamento Crítico (PAC e Retomada Simultâneos)"],
-        horizontal=True
-    )
-    
+    modo_mapa = st.radio("Selecione o filtro geográfico de mapa:", ["Apenas Obras Novo PAC", "Apenas Retomada de Obras Paralisadas", "🚨 Mapeamento Crítico (PAC e Retomada Simultâneos)"], horizontal=True)
     dados_mapa = []
     
     if modo_mapa == "Apenas Obras Novo PAC" and not df_pac.empty:
         df_unicos = df_pac.drop_duplicates(subset=["Município"])
         for idx, row in df_unicos.iterrows():
-            muni_l = limpar_texto_muni(row.get("Município", ""))
+            muni_l = limpar_texto_muni(row["Município"])
             if muni_l in coordenadas_pb:
-                tot = len(df_pac[df_pac["Município"].str.lower().str.strip() == row.get("Município", "").lower().strip()])
-                dados_mapa.append({
-                    "lat": float(coordenadas_pb[muni_l][0]), "lon": float(coordenadas_pb[muni_l][1]), 
-                    "Município": str(row.get("Município", "")).upper(), "Obras PAC": tot, "Obras Retomada": 0, "Total Geral": tot, "Status": "Apenas PAC"
-                })
+                tot = len(df_pac[df_pac["Município"].str.lower().str.strip() == row["Município"].lower().strip()])
+                dados_mapa.append({"lat": float(coordenadas_pb[muni_l][0]), "lon": float(coordenadas_pb[muni_l][1]), "Município": str(row["Município"]).upper(), "Obras PAC": tot, "Obras Retomada": 0, "Total Geral": tot, "Status": "Apenas PAC"})
         if dados_mapa: st.success(f"📍 Mapeados {len(dados_mapa)} municípios com pendências exclusivas do Novo PAC.")
 
     elif modo_mapa == "Apenas Retomada de Obras Paralisadas" and not df_ret.empty:
         df_unicos = df_ret.drop_duplicates(subset=["Município"])
         for idx, row in df_unicos.iterrows():
-            muni_l = limpar_texto_muni(row.get("Município", ""))
+            muni_l = limpar_texto_muni(row["Município"])
             if muni_l in coordenadas_pb:
-                tot = len(df_ret[df_ret["Município"].str.lower().str.strip() == row.get("Município", "").lower().strip()])
-                dados_mapa.append({
-                    "lat": float(coordenadas_pb[muni_l][0]), "lon": float(coordenadas_pb[muni_l][1]), 
-                    "Município": str(row.get("Município", "")).upper(), "Obras PAC": 0, "Obras Retomada": tot, "Total Geral": tot, "Status": "Apenas Retomada"
-                })
+                tot = len(df_ret[df_ret["Município"].str.lower().str.strip() == row["Município"].lower().strip()])
+                dados_mapa.append({"lat": float(coordenadas_pb[muni_l][0]), "lon": float(coordenadas_pb[muni_l][1]), "Município": str(row["Município"]).upper(), "Obras PAC": 0, "Obras Retomada": tot, "Total Geral": tot, "Status": "Apenas Retomada"})
         if dados_mapa: st.warning(f"📍 Mapeados {len(dados_mapa)} municípios com contratos de Retomada Paralisados.")
 
     elif modo_mapa == "🚨 Mapeamento Crítico (PAC e Retomada Simultâneos)" and not df_pac.empty and not df_ret.empty:
-        muni_pac_set = set(df_pac["Município"].dropna().apply(limpar_texto_muni).unique())
-        muni_ret_set = set(df_ret["Município"].dropna().apply(limpar_texto_muni).unique())
+        muni_pac_set = set(df_pac["Município"].apply(limpar_texto_muni).unique())
+        muni_ret_set = set(df_ret["Município"].apply(limpar_texto_muni).unique())
         muni_simultaneos = muni_pac_set.intersection(muni_ret_set)
         
         for m_limpo in muni_simultaneos:
@@ -333,24 +289,17 @@ else:
                 nome_real = str(filtro_nome.iloc[0]).upper() if not filtro_nome.empty else m_limpo.upper()
                 tot_pac = len(df_pac[df_pac["Município"].apply(limpar_texto_muni) == m_limpo])
                 tot_ret = len(df_ret[df_ret["Município"].apply(limpar_texto_muni) == m_limpo])
-                dados_mapa.append({
-                    "lat": float(coordenadas_pb[m_limpo][0]), "lon": float(coordenadas_pb[m_limpo][1]),
-                    "Município": nome_real, "Obras PAC": tot_pac, "Obras Retomada": tot_ret,
-                    "Total Geral": tot_pac + tot_ret, "Status": "🚨 ALERTA CRÍTICO: Ambos os Programas"
-                })
+                dados_mapa.append({"lat": float(coordenadas_pb[m_limpo][0]), "lon": float(coordenadas_pb[m_limpo][1]), "Município": nome_real, "Obras PAC": tot_pac, "Obras Retomada": tot_ret, "Total Geral": tot_pac + tot_ret, "Status": "🚨 ALERTA CRÍTICO: Ambos os Programas"})
         if dados_mapa: st.error(f"🚨 ATENÇÃO: Identificados {len(dados_mapa)} MUNICÍPIOS CRÍTICOS com obras nos dois programas simultaneamente!")
 
     if dados_mapa:
         df_mapa = pd.DataFrame(dados_mapa)
         st.map(df_mapa, latitude="lat", longitude="lon", zoom=7)
-        with st.expander("📊 Detalhamento Estatístico do Painel Geográfico"):
-            df_ordenado = df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False)
-            st.dataframe(df_ordenado, use_container_width=True, hide_index=True)
-    else:
-        st.info("ℹ️ Selecione uma opção acima ou verifique os arquivos da planilha para renderizar os pontos no mapa.")
+        with st.expander("📊 Detalhamento Estatístico"):
+            st.dataframe(df_mapa[["Município", "Obras PAC", "Obras Retomada", "Total Geral", "Status"]].sort_values(by="Total Geral", ascending=False), use_container_width=True, hide_index=True)
 
 # =========================================================================
-# BLOCO INTEGRADO: SECRETÁRIOS (COSEMS/PB) + WHATSAPP (MANTIDO SEGURO)
+# WHATSAPP (MANTIDO SEGURO COM IDENTAÇÃO CORRIGIDA)
 # =========================================================================
 if not obras_filtradas.empty and muni:
     st.markdown("---")
@@ -373,7 +322,6 @@ if not obras_filtradas.empty and muni:
 
     saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
     
-    # CORREÇÃO CRUCIAL APLICADA: O termo do programa agora acompanha perfeitamente a aba ativa
     mensagem_whatsapp = (
         f"{saudacao},\n\n"
         f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
@@ -386,15 +334,11 @@ if not obras_filtradas.empty and muni:
     )
     
     st.text_area("Visualização da Mensagem:", value=mensagem_whatsapp, height=200)
-    
     if fone_secretario:
         num_limpo = "".join(filter(str.isdigit, fone_secretario))
         if len(num_limpo) == 11 and not num_limpo.startswith("55"): num_limpo = f"55{num_limpo}"
         elif len(num_limpo) == 9: num_limpo = f"5583{num_limpo}"
-            
-        link_api_wa = f"https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)}"
-        st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web]({link_api_wa})")
-    
+        st.markdown(f"[📲 Enviar Diretamente via WhatsApp Web](https://whatsapp.com{num_limpo}&text={urllib.parse.quote(mensagem_whatsapp)})")
     st.code(mensagem_whatsapp, language="text")
 
 st.markdown("---")
