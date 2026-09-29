@@ -1,5 +1,5 @@
 import pandas as pd
-import streamlit as st  # 👈 ADICIONADO O "as" CORETAMENTE AQUI
+import streamlit as st
 import os
 import urllib.parse
 import unicodedata
@@ -36,11 +36,12 @@ coordenadas_pb = {
 def limpar_texto_muni(txt):
     return str(txt).lower().strip().replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("â","a").replace("ê","e").replace("ô","o").replace("ã","a").replace("õ","a").replace("ç","c")
 
+# --- ALTERAÇÃO AQUI: Prioriza o PONTO E VÍRGULA (;) na varredura técnica ---
 def carregar_csv_seguro(caminho_arquivo):
     if not os.path.exists(caminho_arquivo):
         return pd.DataFrame()
     encodings = ["utf-8-sig", "latin1", "cp1252"]
-    separadores = [",", ";"]
+    separadores = [";", ","] # 👈 Tenta ponto e vírgula primeiro para separar as linhas da Retomada!
     for sep in separadores:
         for enc in encodings:
             try:
@@ -68,7 +69,7 @@ def normalizar_e_padronizar_df(df_alvo):
         elif "componente" in col_limpa: mapeamento[col] = "Componente"
         elif "situacao" in col_limpa: mapeamento[col] = "Situação no SISMOB"
         elif "execucaofisica" in col_limpa: mapeamento[col] = "Execução física (%) SISMOB"
-        elif "diassem" in col_limpa: mapeamento[col] = "Dias sem monitoramento SISMOB" # 👈 CORREÇÃO EFETUADA AQUI
+        elif "diassem" in col_limpa: mapeamento[col] = "Dias sem monitoramento SISMOB"
         elif "porte" in col_limpa: mapeamento[col] = "Porte"
         elif "modalidade" in col_limpa: mapeamento[col] = "Modalidade"
         elif "quem" in col_limpa: mapeamento[col] = "Quem fez o contato?"
@@ -76,7 +77,7 @@ def normalizar_e_padronizar_df(df_alvo):
         elif "acoes" in col_limpa: mapeamento[col] = "Ações"
         elif "execucaoinformada" in col_limpa: mapeamento[col] = "Execução informada pelo ente (%)"
         elif "previsaodeconclusao" in col_limpa: mapeamento[col] = "Data/Previsão de conclusão informada pelo ente"
-        elif "previsaodeinteg" in col_limpa or "previsaodeinaug" in col_limpa: mapeamento[col] = "Data/Previsão de integration informada pelo ente"
+        elif "previsaodeinteg" in col_limpa or "previsaodeinaug" in col_limpa: mapeamento[col] = "Data/Previsão de integração informada pelo ente"
         elif "observac" in col_limpa: mapeamento[col] = "Observações e problemas"
         
     df_alvo = df_alvo.rename(columns=mapeamento)
