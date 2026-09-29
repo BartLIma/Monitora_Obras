@@ -154,16 +154,24 @@ if tipo_acompanhamento == "Obras Novo PAC":
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
+               # --- MENSAGEM DO NOVO PAC REORGANIZADA EM ORDEM E SEM BARRAS ---
         msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Ano da Proposta: {ano_prop_pac} | Porte: {porte_pac}\n"
-            f"• Previsão Conclusão SISMOB: {data_prev_pac} | Situação Equipe PAC: {sit_equipe_pac}\n"
-            f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
+            f"• Unidade: {unidade}\n"
+            f"• Componente: {comp}\n"
+            f"• Ano da Proposta: {ano_prop_pac}\n"
+            f"• Porte da Obra: {porte_pac}\n"
+            f"• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física SISMOB: {exec_fisica}%\n"
+            f"• Dias Sem Monitoramento: {dias_sem_mon}\n"
+            f"• Previsão de Conclusão SISMOB: {data_prev_pac}\n"
+            f"• Situação da Equipe PAC: {sit_equipe_pac}\n"
+            f"• Prioridade de Contato: {prioridade}\n"
             f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n"
+            f"• Obs Ente: {obs_problemas}"
         )
         programa_nome = "Obras Novo PAC"
+
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
 # =========================================================================
@@ -253,16 +261,25 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
         st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
         st.warning(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
 
+               # --- MENSAGEM DA RETOMADA REORGANIZADA EM ORDEM E SEM BARRAS ---
         msg_contexto = (
-            f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
-            f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
-            f"• Ano da Proposta: {ano_prop_ret} | Porte: {porte_ret} | Modalidade: {modalidade_ret}\n"
-            f"• Assinatura TRR: {data_trr_ret} | Previsão Conclusão SISMOB: {data_prev_ret}\n"
-            f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"
+            f"• Unidade: {unidade}\n"
+            f"• Componente: {comp}\n"
+            f"• Ano da Proposta: {ano_prop_ret}\n"
+            f"• Porte da Obra: {porte_ret}\n"
+            f"• Modalidade: {modalidade_ret}\n"
+            f"• Situação SISMOB: {sit_sismob}\n"
+            f"• Execução Física SISMOB: {exec_fisica}%\n"
+            f"• Dias Sem Monitoramento: {dias_sem_mon}\n"
+            f"• Data Assinatura TRR: {data_trr_ret}\n"
+            f"• Previsão de Conclusão SISMOB: {data_prev_ret}\n"
+            f"• Prioridade de Contato: {prioridade}\n"
             f"• Último Contato por: {quem_contato} em {data_contato}\n"
-            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+            f"• Providências/Ações Pactuadas: {acoes_realizadas}\n"
+            f"• Obs Ente: {obs_problemas}"
         )
         programa_nome = "Retomada de Obras Paralisadas"
+
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
 # =========================================================================
