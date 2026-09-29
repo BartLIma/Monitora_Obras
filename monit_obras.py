@@ -1,5 +1,5 @@
 import pandas as pd
-import streamlit st
+import streamlit as st  # 👈 ADICIONADO O "as" CORETAMENTE AQUI
 import os
 import urllib.parse
 import unicodedata
