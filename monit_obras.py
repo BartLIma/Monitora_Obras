@@ -126,35 +126,41 @@ if tipo_acompanhamento == "Obras Novo PAC":
         if busca_prio: obras_filtradas = df_pac[df_pac["Prioridade de contato"] == busca_prio]
 
     if not obras_filtradas.empty:
-        # A MUDANÇA CRUCIAL: Guardamos o ID numérico real da linha (idx) dentro de um dicionário
         opcoes_obras = {}
         for idx, row in obras_filtradas.iterrows():
-            opcoes_obras[f"{row['Proposta']} - {row['Nome da unidade']} ({row['Município']})"] = idx
+            # --- LIMPEZA CIRÚRGICA: Extrai os valores puros como texto para evitar metadados do Pandas ---
+            num_prop_puro = str(row["Proposta"]).strip()
+            ano_obra = str(row.get("Ano", "")).strip() or str(row.get("Ano da Proposta", "")).strip()
+            nome_uni = str(row["Nome da unidade"]).strip()
+            nome_muni = str(row["Município"]).strip().title()
+            
+            # Monta o texto limpo com o ano ao lado mantendo o formato aprovado
+            texto_exibicao = f"{num_prop_puro} ({ano_obra}) - {nome_uni} ({nome_muni})" if ano_obra else f"{num_prop_puro} - {nome_uni} ({nome_muni})"
+            opcoes_obras[texto_exibicao] = idx
             
         obra_selecionada = st.selectbox("Selecione a obra do PAC para abrir os detalhes:", sorted(opcoes_obras.keys()), key="sel_pac")
         
-        # Resgata os dados diretamente pelo ID único da linha, eliminando o erro de etiquetas duplicadas!
         idx_escolhido = opcoes_obras[obra_selecionada]
         dados_obra = obras_filtradas.loc[idx_escolhido]
-        prop_escolhida = dados_obra["Proposta"]
+        prop_escolhida = str(dados_obra["Proposta"]).strip()
         
-        muni = dados_obra["Município"].upper()
-        unidade = dados_obra["Nome da unidade"]
-        comp = dados_obra["Componente"]
-        sit_sismob = dados_obra["Situação no SISMOB"]
-        exec_fisica = dados_obra["Execução física (%) SISMOB"]
-        dias_sem_mon = dados_obra["Dias sem monitoramento SISMOB"]
-        prioridade = dados_obra["Prioridade de contato"]
-        porte = dados_obra["Porte"]
-        modalidade = dados_obra["Modalidade"]
+        muni = str(dados_obra["Município"]).upper()
+        unidade = str(dados_obra["Nome da unidade"])
+        comp = str(dados_obra["Componente"])
+        sit_sismob = str(dados_obra["Situação no SISMOB"])
+        exec_fisica = str(dados_obra["Execução física (%) SISMOB"])
+        dias_sem_mon = str(dados_obra["Dias sem monitoramento SISMOB"])
+        prioridade = str(dados_obra["Prioridade de contato"])
+        porte = str(dados_obra["Porte"])
+        modalidade = str(dados_obra["Modalidade"])
         
-        quem_contato = dados_obra["Quem fez o contato?"]
-        data_contato = dados_obra["Data do contato"]
-        acoes_realizadas = dados_obra["Ações"]
-        exec_ente = dados_obra["Execução informada pelo ente (%)"]
-        prev_conclusao = dados_obra["Data/Previsão de conclusão informada pelo ente"]
-        prev_inauguracao = dados_obra["Data/Previsão de integração informada pelo ente"]
-        obs_problemas = dados_obra["Observações e problemas"]
+        quem_contato = str(dados_obra["Quem fez o contato?"])
+        data_contato = str(dados_obra["Data do contato"])
+        acoes_realizadas = str(dados_obra["Ações"])
+        exec_ente = str(dados_obra["Execução informada pelo ente (%)"])
+        prev_conclusao = str(dados_obra["Data/Previsão de conclusão informada pelo ente"])
+        prev_inauguracao = str(dados_obra["Data/Previsão de integração informada pelo ente"])
+        obs_problemas = str(dados_obra["Observações e problemas"])
         
         col1, col2 = st.columns(2)
         with col1:
@@ -186,6 +192,7 @@ if tipo_acompanhamento == "Obras Novo PAC":
 
         msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n• Último Contato por: {quem_contato} em {data_contato}\n• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         programa_nome = "Obras Novo PAC"
+
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
 # =========================================================================
@@ -209,14 +216,21 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
     if not obras_filtradas.empty:
         opcoes_obras = {}
         for idx, row in obras_filtradas.iterrows():
-            opcoes_obras[f"{row['Proposta']} - {row['Nome da unidade']} ({row['Município']})"] = idx
+            # --- LIMPEZA CIRÚRGICA: Extrai os valores puros como texto para evitar metadados do Pandas ---
+            num_prop_puro = str(row["Proposta"]).strip()
+            ano_obra = str(row.get("Ano", "")).strip() or str(row.get("Ano da Proposta", "")).strip()
+            nome_uni = str(row["Nome da unidade"]).strip()
+            nome_muni = str(row["Município"]).strip().title()
+            
+            # Monta o texto limpo com o ano ao lado mantendo o formato aprovado
+            texto_exibicao = f"{num_prop_puro} ({ano_obra}) - {nome_uni} ({nome_muni})" if ano_obra else f"{num_prop_puro} - {nome_uni} ({nome_muni})"
+            opcoes_obras[texto_exibicao] = idx
             
         obra_selecionada = st.selectbox("Selecione a obra para detalhar:", sorted(opcoes_obras.keys()), key="sel_ret")
         
-        # --- CORREÇÃO: Resgate absoluto por .loc baseado no ID único da linha ---
         idx_escolhido = opcoes_obras[obra_selecionada]
-        dados_obra = obras_filtradas.loc[idx_escolhido]
-        prop_escolhida = str(dados_obra["Proposta"])
+        dados_obra = df_ret.loc[idx_escolhido]
+        prop_escolhida = str(dados_obra["Proposta"]).strip()
         
         muni = str(dados_obra["Município"]).upper()
         unidade = str(dados_obra["Nome da unidade"])
@@ -266,7 +280,6 @@ elif tipo_acompanhamento == "Retomada de Obras Paralisadas":
 
         msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n• Último Contato por: {quem_contato} em {data_contato}\n• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
         programa_nome = "Retomada de Obras Paralisadas"
-
 
 # =========================================================================
 # FLUXO 3: NOVO SISTEMA DE GEORREFERENCIAMENTO INTEGRADO TRICOR
