@@ -285,17 +285,25 @@ if not obras_filtradas.empty and muni:
     st.write(f"**Secretário(a) de Saúde:** {nome_secretario}")
     st.write(f"**WhatsApp/Telefone:** {fone_secretario if fone_secretario else 'Não informado'}")
 
-    saudacao = "Prezado(a) Secretário(a)" if "Não localizado" in nome_secretario else f"Prezado(a) Secretário(a) {nome_secretario}"
-    mensagem_whatsapp = (
-        f"{saudacao},\n\n"
-        f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {programa_nome}:\n\n"
-        f"📌 *DADOS DO INSTRUMENTO:*\n"
-        f"• Município: {muni} - PB\n"
-        f"• Proposta Nº: {prop_escolhida}\n"
-        f"{msg_contexto}\n\n"
-        f"Solicitamos atenção especial quanto ao andamento dos trâmites administrativos para a regularização do objeto. "
-        f"Permanecemos à disposição para suporte técnico."
-    )
+   # --- SUBSTUA APENAS O TRECHO DA MENSAGEM_WHATSAPP NO SEU CÓDIGO ORIGINAL ---
+
+# Cria um cabeçalho inteligente baseado no programa ativo na barra lateral
+if tipo_acompanhamento == "Retomada de Obras Paralisadas":
+    termo_programa = "Retomada de Obras Paralisadas"
+else:
+    termo_programa = "Obras Novo PAC"
+
+mensagem_whatsapp = (
+    f"{saudacao},\n\n"
+    f"Entramos em contato para verificar a evolução técnica e pendências de engenharia em seu município, vinculadas ao programa de {termo_programa}:\n\n"
+    f"📌 *DADOS DO INSTRUMENTO:*\n"
+    f"• Município: {muni} - PB\n"
+    f"• Proposta Nº: {prop_escolhida}\n"
+    f"{msg_contexto}\n\n"
+    f"Solicitamos atenção especial quanto ao andamento dos trâmites administrativos para a regularização do objeto. "
+    f"Permanecemos à disposição para suporte técnico."
+)
+
     
     st.text_area("Visualização da Mensagem:", value=mensagem_whatsapp, height=200)
     
