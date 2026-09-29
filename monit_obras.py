@@ -102,13 +102,7 @@ if tipo_acompanhamento == "Obras Novo PAC":
         prop_escolhida = obra_selecionada.split(" - ")[0].strip()
         dados_obra = obras_filtradas[obras_filtradas["Proposta"] == prop_escolhida].iloc[0]
         
-        muni = dados_obra.get("Município", "").upper()
-        unidade = dados_obra.get("Nome da unidade", "")
-        comp = dados_obra.get("Componente", "")
-        sit_sismob = dados_obra.get("Situação no SISMOB", "")
-        exec_fisica = dados_obra.get("Execução física (%) SISMOB", "")
-        dias_sem_mon = dados_obra.get("Dias sem monitoramento SISMOB", "")
-        prioridade = dados_obra.get("Prioridade de contato", "")
+        obs_problemas = dados_obra.get("Observações e problemas", "-") or "-"
         
         col1, col2 = st.columns(2)
         with col1:
@@ -122,8 +116,34 @@ if tipo_acompanhamento == "Obras Novo PAC":
             st.markdown(f"**Dias Sem Monit.:** {dias_sem_mon} dias")
             st.markdown(f"**Prioridade de Contato:** `{prioridade}`")
 
-        msg_contexto = f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n• Execução Física: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}"
+        # --- EXIBIÇÃO VISUAL DOS DADOS DE CONTATO E AÇÕES (PAC) ---
+        st.markdown("---")
+        st.markdown("### 📞 Acompanhamento e Respostas do Ente (Novo PAC)")
+        col_c1, col_c2, col_c3 = st.columns(3)
+        with col_c1:
+            st.metric("Quem fez o contato?", quem_contato)
+            st.metric("Execução informada pelo ente", f"{exec_ente}%" if exec_ente != "-" else "-")
+        with col_c2:
+            st.metric("Data do contato", data_contato)
+            st.metric("Previsão de conclusão", prev_conclusao)
+        with col_c3:
+            st.write("")
+            st.metric("Previsão de inauguração", prev_inauguracao)
+            
+        # Posicionamento imediato da coluna Ações logo após os dados de contato
+        st.success(f"**🎯 Próximas Ações e Providências Agendadas:**\n\n{acoes_realizadas}")
+        st.info(f"**📝 Observações e problemas relatados:**\n\n{obs_problemas}")
+
+        # Atualização do contexto de mensagem que alimenta o bloco final do WhatsApp
+        msg_contexto = (
+    f"• Unidade: {unidade}\n• Componente: {comp}\n• Situação SISMOB: {sit_sismob}\n"
+    f"• Execução Física SISMOB: {exec_fisica}%\n• Dias Sem Monitoramento: {dias_sem_mon}\n• Prioridade: {prioridade}\n"
+    f"• Data do Repasse: {dados_obra.get('Data do repasse', '-')}\n"  # <-- ADICIONE APENAS ESTA LINHA
+    f"• Último Contato por: {quem_contato} em {data_contato}\n"
+    f"• Providências/Ações Pactuadas: {acoes_realizadas}\n• Obs Ente: {obs_problemas}"
+)
         programa_nome = "Obras Novo PAC"
+
 # =========================================================================
 # FLUXO 2: RETOMADA DE OBRAS PARALISADAS
 # =========================================================================
